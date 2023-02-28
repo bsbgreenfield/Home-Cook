@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="wrapper">
+    <div id="cookbook-grid">
+            <h4 class="cookbook-accent">Cookbooks</h4>
+        {% if cookbooks %}
+        {% for cookbook in cookbooks %}
+        <h4>{{ cookbook.name }}</h4>
+        <ul class="cookbook-recipes">
+            {% if cookbook.recipes %}
+            {% for recipe in cookbook.recipes %}
+            <li>
+                <a href="">{{recipe.name}}</a>
+                <button>Select >></button>
+            </li>
+            {% endfor %}
+            {% else %}
+            <p>no recipes yet</p>
+            <a href="/users/{{g.user.id}}/cookbooks/{{cookbook.id}}/add_recipe">add one</a>
+            {% endif %}
+        </ul>
+        {% endfor %}
+        {% else %}
+        <p>No cookbooks yet</p>
+        <a href="/users/{{g.user.id}}/cookbooks/add">add one</a>
+        {% endif %}
+    </div>
+    <div id="user-banner-grid">
+        <h5>{{g.user.username}}</h6>
+        <h5>{{g.user.full_name}}</h6>
+    </div>
+    <div id="create-new-recipe-grid">
+        <div>Create new <span class="recipe-accent">Recipe!</span></div>
+        <form action="/recipes/build">
+            <input type="text" placeholder="keyword">
+                <button>Go</button>
+        </form>
+        <form action="/recipes/build">
+            <button>Start from scratch</button>
+        </form>
+    </div>
+    <div id="recipe-disp-grid">
+        <h2>recipe!</h2>
+    </div>
+</div>
+
+{% endblock %}

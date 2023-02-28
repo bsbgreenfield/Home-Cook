@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}
+New Recipe
+{% endblock %}
+{% block content %}
+<h1>Create a recipe</h1>
+<form method="POST" id="cookbook_form">
+    {{ form.hidden_tag() }}
+
+    {% for field in form if field.widget.input_type != 'hidden' %}
+      {% for error in field.errors %}
+        <span>{{ error }}</span>
+      {% endfor %}
+      {{field.label.text}}
+      {{ field(placeholder=field.label.text) }}
+    {% endfor %}
+    <button type="submit">Create Recipe</button>
+</form>
+{% endblock %}

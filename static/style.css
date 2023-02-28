@@ -1,0 +1,69 @@
+body{
+    position: relative;
+}
+a{
+    color: black;
+}
+.wrapper{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 5px;
+    height: 94vh;
+}
+.wrapper > div{
+    border-radius: 3%;
+}
+#cookbook-grid{
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 3;
+    grid-row-end: 8;
+    border: 1px solid black;
+}
+#user-banner-grid{
+    grid-column-start: 2;
+    grid-column-end: 5;
+    grid-row-start: 1;
+    grid-row-end: 2;
+    border: 1px solid black;
+}
+#create-new-recipe-grid{
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 1;
+    grid-row-end: 3;
+    border: 1px solid black;
+}
+#recipe-disp-grid{
+    grid-column-start: 2;
+    grid-column-end: 5;
+    grid-row-start: 2;
+    grid-row-end: 8;
+    text-align: center;
+    border: 1px solid black;
+}
+#navbar{
+    display: flex;
+    justify-content: space-evenly;
+    background-color: rgb(231, 223, 119);
+    margin-bottom: 3px;
+    border: 1px solid black;
+}
+.link-button{
+    border: none;
+    background-color: transparent;
+    text-decoration: underline;
+}
+.cookbook-recipes{
+    list-style: none;
+}
+.recipe-accent{
+    color: rgb(218, 52, 91); /* recipe color primary */
+}
+.cookbook-accent{
+    color: rgb(107, 116, 220); /* cookbook color primary */
+    padding: 5px 5px 5px 5px;
+    margin-block-start: 0;
+    margin-block-end: 0;
+}
