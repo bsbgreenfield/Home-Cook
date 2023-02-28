@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}
+New Recipe
+{% endblock %}
+{% block content %}
+<div id="recipe-build build-main">
+    <div id="recipe-build-ingredient">
+        <form method="POST" id="build-recipe-form">
+            {{ main_recipe_form.hidden_tag() }}
+        
+            {% for field in main_recipe_form if field.widget.input_type != 'hidden' %}
+              {% for error in field.errors %}
+                <span>{{ error }}</span>
+              {% endfor %}
+              <span>{{ field(placeholder=field.label.text) }}</span>
+            {% endfor %}
+        </form>
+        <div id="recipe-build-search">
+            <form method="POST" id="build-search-form">
+                {{ build_search_form.hidden_tag() }}
+            
+                {% for field in build_search_form if field.widget.input_type != 'hidden' %}
+                  {% for error in field.errors %}
+                    <span>{{ error }}</span>
+                  {% endfor %}
+                  <span>{{ field(placeholder=field.label.text) }}</span>
+                {% endfor %}
+            </form>
+        </div>
+        <button type="submit" form="build-recipe-form">Create Recipe</button>
+    </div>
+    <div id="recipe-build build-tag">
+        <form method="POST" id="build-tag-form">
+            {{ build_tag_form.hidden_tag() }}
+        
+            {% for field in build_tag_form if field.widget.input_type != 'hidden' %}
+              {% for error in field.errors %}
+                <span>{{ error }}</span>
+              {% endfor %}
+              <span>{{ field(placeholder=field.label.text) }}</span>
+            {% endfor %}
+        </form>
+    </div>
+    <div id="recipe-build build-notes">
+        <form method="POST" id="build-notes-form">
+            {{ build_notes_form.hidden_tag() }}
+        
+            {% for field in build_notes_form if field.widget.input_type != 'hidden' %}
+              {% for error in field.errors %}
+                <span>{{ error }}</span>
+              {% endfor %}
+              <span>{{ field(placeholder=field.label.text) }}</span>
+            {% endfor %}
+        </form>
+    </div>
+    <div id="recipe-build build-instructions">
+        <form method="POST" id="build-instructions-form">
+            {{ build_instructions_form.hidden_tag() }}
+        
+            {% for field in build_instructions_form if field.widget.input_type != 'hidden' %}
+              {% for error in field.errors %}
+                <span>{{ error }}</span>
+              {% endfor %}
+              <span>{{ field(placeholder=field.label.text) }}</span>
+            {% endfor %}
+        </form>
+    </div>
+</div>
+{% endblock%}
