@@ -4,6 +4,11 @@ body{
 a{
     color: black;
 }
+.header{
+    font-size: 45px;
+    font-weight: 500;
+    margin-right: 20%;
+}
 .wrapper{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
