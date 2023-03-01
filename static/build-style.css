@@ -1,0 +1,98 @@
+#recipe-build-grid-wrapper{
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(9,1fr);
+    height: 92%;
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-top: 10px;
+    column-gap: 5px;
+}
+
+.build-ingredient{
+    grid-column-start:1 ;
+    grid-column-end: 11;
+    grid-row-start: 1;
+    grid-row-end: 8;
+    position: relative;
+    border-top: 1px solid black;
+    border-right: 1px solid black;
+    border-left: 1px solid black ;
+}
+.build-ingredient input{
+    margin-top: 5px;
+    height: 40px;
+    width: 320px;
+    font-size: 35px;
+    text-align: center;
+}
+
+.build-tag{
+    grid-column-start: 1;
+    grid-column-end: 3;
+    grid-row-start: 8;
+    grid-row-end: 10;
+    border-right: 1px solid black;
+    border-left: 1px solid black ;
+    border-bottom: 1px solid black;
+}
+.build-notes{
+    grid-column-start: 4;
+    grid-column-end: 6;
+    grid-row-start: 8;
+    grid-row-end: 10;
+    border-right: 1px solid black;
+    border-left: 1px solid black ;
+    border-bottom: 1px solid black;
+   
+}
+.build-instructions{
+    grid-column-start: 7;
+    grid-column-end: 10;
+    grid-row-start: 8;
+    grid-row-end: 10;
+    border-right: 1px solid black;
+    border-left: 1px solid black ;
+    border-bottom: 1px solid black;
+}
+.build-button{
+    grid-column-start: 10;
+    grid-column-end: 11;
+    grid-row-start: 8;
+    grid-row-end: 10;
+    border-top: 1px solid black;
+}
+.build-main{
+    height: 95vh;
+    text-align: center;
+    border: 1px solid black;
+    border-bottom: 1px solid black;
+}
+
+.main-input input{
+    height: 40px;
+    width: 360px;
+    font-size: 40px;
+    border: none;
+    text-align: center;
+    color:  rgb(218, 52, 91);
+}
+
+#recipe-build-search{
+    position: absolute;
+    left: 75%;
+    top: 15px;
+    border: 1px solid black;
+    height: 80%;
+    width: 20%;
+}
+.submit{
+    margin-top: 15px;
+    margin-left: 8px;
+    height: 80%;
+    width: 90%;
+    background-color: rgb(218, 52, 91);
+    font-size: 30px;
+    font-style: italic;
+    border-radius: 4%;
+}
