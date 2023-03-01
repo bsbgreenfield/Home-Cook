@@ -90,7 +90,7 @@ class Recipe(db.Model):
         'Cookbook', backref='recipes')
     
     child_ingredients = db.relationship('Ingredient', secondary = 'recipes_ingredients', backref='recipes')
-
+    instructions = db.relationship('Instruction', backref='recipe')
 
 
 
@@ -104,6 +104,7 @@ class Instruction(db.Model):
     text = db.Column(db.Text, nullable=False)
     recipe = db.Column(db.Integer, db.ForeignKey(
         'recipes.id', ondelete='CASCADE'), nullable=False)
+    
 
 class Ingredient(db.Model):
 

@@ -3,7 +3,7 @@ from flask import request, render_template, redirect, flash, Flask, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from models import db, connect_db, User, Cookbook, Recipe, Ingredient, Instruction
-from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm
+from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, BuildNotesForm, BuildInstructionsForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -68,10 +68,12 @@ def login():
 
     return render_template('/login.html', form=form)
 
-@app.route('/logout', methods = ['POST'])
+
+@app.route('/logout', methods=['POST'])
 def logout():
     if do_logout():
         return redirect('/')
+
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -91,7 +93,7 @@ def signup():
         except IntegrityError:
             flash("Username is already taken!")
             return render_template('signup.html', form=form)
-        
+
         do_login(user)
 
         return redirect('/')
@@ -105,16 +107,44 @@ def user_landing_page(user_id):
     cookbooks = selected_user.cookbooks
     return render_template('main.html', cookbooks=cookbooks)
 
+@app.route('/recipes/build')
+def recipe_from_scratch():
+    new_recipe = Recipe(name='New Recipe', cookbook_id = None, user_id=g.user.id)
+    db.session.add(new_recipe)
+    return redirect(f'/recipes/{new_recipe.id}/edit')
 
 @app.route('/recipes/<int:recipe_id>/edit')
 def view_and_edit_recipe(recipe_id):
     selected_recipe = Recipe.query.get(recipe_id)
-    return render_template('recipe.html', recipe=selected_recipe)
+    main_recipe_form = AddRecipeForm(name=selected_recipe.name, cookbook=selected_recipe.cookbook_id)
+    main_recipe_form.cookbook.choices = [(cookbook.id, cookbook.name)
+                             for cookbook in Cookbook.query.filter_by(user_id=g.user.id)]
+    build_search_form = BuildSearchForm()
+    build_tag_form = BuildTagForm()
+    build_notes_form = BuildNotesForm()
+    build_instructions_form = BuildInstructionsForm()
+    if main_recipe_form.validate_on_submit():
+        name = main_recipe_form.name.data
+        cookbook_id = main_recipe_form.cookbook.data
+        selected_recipe.name = name
+        selected_recipe.cookbook_id = cookbook_id
+        db.session.add(selected_recipe)
+        db.session.commit()
+        
+    return render_template('recipe.html', recipe=selected_recipe,
+                            main_recipe_form=main_recipe_form,
+                              build_search_form=build_search_form,
+                                build_tag_form=build_tag_form,
+                                  build_notes_form=build_notes_form,
+                                    build_instructions_form=build_instructions_form)
 
-@app.route('/users/<int:user_id>/cookbooks/<int:cookbook_id>/add_recipe', methods = ['GET', 'POST'])
+
+
+@app.route('/users/<int:user_id>/cookbooks/<int:cookbook_id>/add_recipe', methods=['GET', 'POST'])
 def add_new_recipe(user_id, cookbook_id):
     form = AddRecipeForm(cookbook=cookbook_id)
-    form.cookbook.choices = [(cookbook.id, cookbook.name) for cookbook in Cookbook.query.filter_by(user_id=user_id)]
+    form.cookbook.choices = [(cookbook.id, cookbook.name)
+                             for cookbook in Cookbook.query.filter_by(user_id=user_id)]
     if form.validate_on_submit():
         name = form.name.data
         cookbook = form.cookbook.data
@@ -124,17 +154,19 @@ def add_new_recipe(user_id, cookbook_id):
         return redirect(f'/users/{user_id}')
     return render_template('add_recipe.html', form=form)
 
-@app.route('/users/<int:user_id>cookbooks/add', methods = ['GET', 'POST'])
+
+@app.route('/users/<int:user_id>cookbooks/add', methods=['GET', 'POST'])
 def add_new_cookbook(user_id):
     form = AddCookbookForm()
     if Recipe.query.all():
-        form.recipes.choices = [(recipe.id, recipe.name) for recipe in Recipe.query.all()]
-    else: form.recipes.choices = ['No Recipes Found']
+        form.recipes.choices = [(recipe.id, recipe.name)
+                                for recipe in Recipe.query.all()]
+    else:
+        form.recipes.choices = ['No Recipes Found']
     if form.validate_on_submit():
         name = form.name.data
         new_cookbook = Cookbook(name=name, user_id=user_id)
         db.session.add(new_cookbook)
         db.session.commit()
         return redirect(f'/users/{user_id}')
-    return render_template('add_cookbook.html', form = form)
-
+    return render_template('add_cookbook.html', form=form)

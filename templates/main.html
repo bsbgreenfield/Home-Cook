@@ -11,7 +11,7 @@
             {% if cookbook.recipes %}
             {% for recipe in cookbook.recipes %}
             <li>
-                <a href="">{{recipe.name}}</a>
+                <a href="/recipes/{{recipe.id}}/edit">{{recipe.name}}</a>
                 <button>Select >></button>
             </li>
             {% endfor %}

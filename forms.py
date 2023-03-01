@@ -31,3 +31,13 @@ class AddRecipeForm(FlaskForm):
 
 class BuildSearchForm(FlaskForm):
     ingredient = StringField('Ingredient', validators=[DataRequired()])
+
+class BuildTagForm(FlaskForm):
+    tag = StringField('Tag', validators = [DataRequired()])
+
+class BuildNotesForm(FlaskForm):
+    note = StringField('Add Note', validators=[DataRequired()])
+
+class BuildInstructionsForm(FlaskForm):
+    instruction = StringField('Add Instruction', validators=[DataRequired()])
+
