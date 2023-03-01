@@ -3,10 +3,21 @@
 {% block content %}
 <div class="wrapper">
     <div id="cookbook-grid">
-            <h4 class="cookbook-accent">Cookbooks</h4>
+        <div>
+            <h4 class="cookbook-accent" style="display: inline;">Cookbooks</h4>
+            <a href="/users/{{g.user.id}}/cookbooks/add" style="display:inline">New</a>
+        </div>
         {% if cookbooks %}
         {% for cookbook in cookbooks %}
-        <h4>{{ cookbook.name }}</h4>
+        <div>
+                <p>{{ cookbook.name }}
+                    <a href="/cookbooks/{{cookbook.id}}">
+                        <svg class="open-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0  25 25">
+                            <path d="M14 4h-13v18h20v-11h1v12h-22v-20h14v1zm10 5h-1v-6.293l-11.646 11.647-.708-.708 11.647-11.646h-6.293v-1h8v8z"/>
+                        </svg>
+                    </a>
+                </p>
+        </div>
         <ul class="cookbook-recipes">
             {% if cookbook.recipes %}
             {% for recipe in cookbook.recipes %}
@@ -15,9 +26,31 @@
                 <button>Select >></button>
             </li>
             {% endfor %}
+            <div>
+                <form action='/users/{{g.user.id}}/cookbooks/{{cookbook.id}}/add_recipe' method="POST">
+                    {{ form.hidden_tag() }}
+                
+                    {% for field in form if field.widget.input_type != 'hidden' %}
+                      {% for error in field.errors %}
+                        <span>{{ error }}</span>
+                      {% endfor %}
+                      {{ field(placeholder=field.label.text) }}
+                    {% endfor %}
+                    <button type="submit">add</button>
+                </form>
+            </div>
             {% else %}
-            <p>no recipes yet</p>
-            <a href="/users/{{g.user.id}}/cookbooks/{{cookbook.id}}/add_recipe">add one</a>
+            <form action='/users/{{g.user.id}}/cookbooks/{{cookbook.id}}/add_recipe' method="POST">
+                    {{ form.hidden_tag() }}
+                
+                    {% for field in form if field.widget.input_type != 'hidden' %}
+                      {% for error in field.errors %}
+                        <span>{{ error }}</span>
+                      {% endfor %}
+                      {{ field(placeholder=field.label.text) }}
+                    {% endfor %}
+                    <button type="submit">add</button>
+            </form>
             {% endif %}
         </ul>
         {% endfor %}

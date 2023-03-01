@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}
+{{cookbook.name}}
+{% endblock %}
+{% block content %}
+<h1>{{cookbook.name}}</h1>
+<h3>{{cookbook.user.username}}'s Cookbook</h3>
+<div class="detail-disp-main">
+    <div class="detail-content-grid">
+        {% for recipe in cookbook.recipes %}
+        <div class="card-wrapper">
+            <div class="cookbook-card profile-card">
+                <div class="card-inner">
+                    <div class="image-wrapper">
+                        IMG
+                    </div>
+                    <div class="card-contents">
+                        {{recipe.name}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

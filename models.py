@@ -91,9 +91,26 @@ class Recipe(db.Model):
     
     child_ingredients = db.relationship('Ingredient', secondary = 'recipes_ingredients', backref='recipes')
     instructions = db.relationship('Instruction', backref='recipe')
+    notes = db.relationship('Note', backref='recipe')
 
+class Tag(db.Model):
 
+    __tablename__ = 'tags'
+    id = db.Column(db.Integer,
+                   primary_key=True,
+                   autoincrement=True)
+    name = db.Column(db.String(30), nullable=False)
 
+class recipe_tag(db.Model):
+
+    __tablename__ = 'recipes_tags'
+
+    tag_id = db.Column(
+        db.Integer, db.ForeignKey('tags.id', ondelete="CASCADE"), primary_key=True)
+    recipe_id= db.Column(
+        db.Integer, db.ForeignKey('recipes.id', ondelete="cascade"), primary_key=True)
+    
+    
 class Instruction(db.Model):
 
     __tablename__ = 'instructions'
@@ -102,9 +119,20 @@ class Instruction(db.Model):
                    primary_key=True,
                    autoincrement=True)
     text = db.Column(db.Text, nullable=False)
-    recipe = db.Column(db.Integer, db.ForeignKey(
+    recipe_id = db.Column(db.Integer, db.ForeignKey(
         'recipes.id', ondelete='CASCADE'), nullable=False)
     
+
+
+class Note(db.Model):
+
+    __tablename__ = 'notes'
+    id = db.Column(db.Integer,
+                   primary_key=True,
+                   autoincrement=True)
+    text = db.Column(db.Text, nullable=False)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id', ondelete = 'CASCADE'), nullable = False)
+
 
 class Ingredient(db.Model):
 
@@ -113,7 +141,7 @@ class Ingredient(db.Model):
     id = db.Column(db.Integer,
                    primary_key=True,
                    autoincrement=True)
-    name = db.Column(db.String(55), nullable = False)
+    name = db.Column(db.String, nullable = False)
     price = db.Column(db.Float, nullable = True)
 
     parent_recipes = db.relationship('Recipe', secondary='recipes_ingredients', backref = 'ingredients')

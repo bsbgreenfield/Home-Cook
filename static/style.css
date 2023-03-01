@@ -67,3 +67,10 @@ a{
     margin-block-start: 0;
     margin-block-end: 0;
 }
+.open-svg{
+ height:10px;
+ width: 10px;
+}
+svg:hover{
+    cursor: pointer;
+}
