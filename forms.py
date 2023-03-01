@@ -41,3 +41,6 @@ class BuildNotesForm(FlaskForm):
 class BuildInstructionsForm(FlaskForm):
     instruction = StringField('Add Instruction', validators=[DataRequired()])
 
+class RecipeQuickAdd(FlaskForm):
+    recipe = SelectField()
+    

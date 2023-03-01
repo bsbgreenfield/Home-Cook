@@ -7,12 +7,13 @@
     <title>{% block title %} {% endblock %}</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/build-style.css">
+    <link rel="stylesheet" href="/static/profile.css">
 </head>
 <body>
     <nav id="navbar">
         <span><a href="/users/{{g.user.id}}">Home</a></span>
         <span><a href="/users/{{g.user.id}}/fiends">Friends</a></span>
-        <span><a href="/users/{{g.user.id}}/edit">Profile</a></span>
+        <span><a href="/users/{{g.user.id}}/profile">Profile</a></span>
         {% if session['curr_user'] == g.user.id%}
         <form action="/logout" method=POST style="display:inline-block">
             <button class="link-button">logout</button>

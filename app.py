@@ -3,7 +3,7 @@ from flask import request, render_template, redirect, flash, Flask, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from models import db, connect_db, User, Cookbook, Recipe, Ingredient, Instruction
-from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, BuildNotesForm, BuildInstructionsForm
+from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, BuildNotesForm, BuildInstructionsForm, RecipeQuickAdd
 
 CURR_USER_KEY = "curr_user"
 
@@ -103,17 +103,21 @@ def signup():
 
 @app.route('/users/<int:user_id>')
 def user_landing_page(user_id):
+    form = RecipeQuickAdd()
+    form.recipe.choices = [(recipe.id, recipe.name)
+                             for recipe in Recipe.query.all()]
     selected_user = User.query.get(user_id)
     cookbooks = selected_user.cookbooks
-    return render_template('main.html', cookbooks=cookbooks)
+    return render_template('main.html', cookbooks=cookbooks, form=form)
 
 @app.route('/recipes/build')
 def recipe_from_scratch():
     new_recipe = Recipe(name='New Recipe', cookbook_id = None, user_id=g.user.id)
     db.session.add(new_recipe)
+    db.session.commit()     # figure out a way to not have to commit if recipe is cancelled?
     return redirect(f'/recipes/{new_recipe.id}/edit')
 
-@app.route('/recipes/<int:recipe_id>/edit')
+@app.route('/recipes/<int:recipe_id>/edit', methods = ['GET', 'POST'])
 def view_and_edit_recipe(recipe_id):
     selected_recipe = Recipe.query.get(recipe_id)
     main_recipe_form = AddRecipeForm(name=selected_recipe.name, cookbook=selected_recipe.cookbook_id)
@@ -130,7 +134,7 @@ def view_and_edit_recipe(recipe_id):
         selected_recipe.cookbook_id = cookbook_id
         db.session.add(selected_recipe)
         db.session.commit()
-        
+        return redirect(f'/users/{g.user.id}')
     return render_template('recipe.html', recipe=selected_recipe,
                             main_recipe_form=main_recipe_form,
                               build_search_form=build_search_form,
@@ -140,22 +144,22 @@ def view_and_edit_recipe(recipe_id):
 
 
 
-@app.route('/users/<int:user_id>/cookbooks/<int:cookbook_id>/add_recipe', methods=['GET', 'POST'])
+@app.route('/users/<int:user_id>/cookbooks/<int:cookbook_id>/add_recipe', methods=['POST'])
 def add_new_recipe(user_id, cookbook_id):
-    form = AddRecipeForm(cookbook=cookbook_id)
-    form.cookbook.choices = [(cookbook.id, cookbook.name)
-                             for cookbook in Cookbook.query.filter_by(user_id=user_id)]
+    form = RecipeQuickAdd()
+    form.recipe.choices = [(recipe.id, recipe.name)
+                             for recipe in Recipe.query.all()]
     if form.validate_on_submit():
-        name = form.name.data
-        cookbook = form.cookbook.data
-        new_recipe = Recipe(name=name, cookbook_id=cookbook, user_id=user_id)
-        db.session.add(new_recipe)
+        recipe_to_add = Recipe.query.get(form.recipe.data)
+        recipe_to_add.cookbook_id = cookbook_id
+        db.session.add(recipe_to_add)
         db.session.commit()
         return redirect(f'/users/{user_id}')
-    return render_template('add_recipe.html', form=form)
+    else:
+        return redirect(f'/user/{user_id}')
 
 
-@app.route('/users/<int:user_id>cookbooks/add', methods=['GET', 'POST'])
+@app.route('/users/<int:user_id>/cookbooks/add', methods=['GET', 'POST'])
 def add_new_cookbook(user_id):
     form = AddCookbookForm()
     if Recipe.query.all():
@@ -170,3 +174,13 @@ def add_new_cookbook(user_id):
         db.session.commit()
         return redirect(f'/users/{user_id}')
     return render_template('add_cookbook.html', form=form)
+
+@app.route('/users/<int:user_id>/profile')
+def profile_view(user_id):
+    selected_user = User.query.get(user_id)
+    return render_template('profile.html', user=selected_user)
+
+@app.route('/cookbooks/<int:cookbook_id>')
+def view_cookbook(cookbook_id):
+    selected_cookbook = Cookbook.query.get(cookbook_id)
+    return render_template('cookbook.html', cookbook=selected_cookbook)
