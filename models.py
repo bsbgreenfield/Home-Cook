@@ -53,7 +53,7 @@ class User(db.Model):
             else:
                 return False
         return False
-
+    
 
 class Cookbook(db.Model):
     """cookbook class
