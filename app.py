@@ -1,5 +1,5 @@
 import os
-from flask import request, render_template, redirect, flash, Flask, session, g
+from flask import request, render_template, redirect, flash, Flask, session, g, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from models import db, connect_db, User, Cookbook, Recipe, Ingredient, Instruction
@@ -184,3 +184,14 @@ def profile_view(user_id):
 def view_cookbook(cookbook_id):
     selected_cookbook = Cookbook.query.get(cookbook_id)
     return render_template('cookbook.html', cookbook=selected_cookbook)
+
+
+#******************************************************************************
+# API routes
+
+@app.route('/api/recipes/<int:recipe_id>')
+def send_recipe_data(recipe_id):
+    selected_recipe = Recipe.query.get(recipe_id)
+    return jsonify(recipe=selected_recipe.serialize())
+
+

@@ -93,6 +93,15 @@ class Recipe(db.Model):
     instructions = db.relationship('Instruction', backref='recipe')
     notes = db.relationship('Note', backref='recipe')
 
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "rating":self.rating or 'unrated',
+            'user_id':self.user_id,
+            'ingredients': [{'id':ingredient.id, 'name': ingredient.name, 'price': ingredient.price} for ingredient in self.child_ingredients],
+            'instructions': [{'id': instruction.id, 'text': instruction.text} for instruction in self.instructions]
+        }
 class Tag(db.Model):
 
     __tablename__ = 'tags'
