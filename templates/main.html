@@ -10,49 +10,54 @@
         {% if cookbooks %}
         {% for cookbook in cookbooks %}
         <div>
-                <p>{{ cookbook.name }}
+                <p class="cookbook-grid-title">{{ cookbook.name }}
                     <a href="/cookbooks/{{cookbook.id}}">
                         <svg class="open-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0  25 25">
                             <path d="M14 4h-13v18h20v-11h1v12h-22v-20h14v1zm10 5h-1v-6.293l-11.646 11.647-.708-.708 11.647-11.646h-6.293v-1h8v8z"/>
                         </svg>
                     </a>
+                    <svg viewBox="0 0 15 10" xmlns="http://www.w3.org/2000/svg" class="expand-svg">
+                        <path d="M3.85355 2.14645C3.65829 1.95118 3.34171 1.95118 3.14645 2.14645C2.95118 2.34171 2.95118 2.65829 3.14645 2.85355L7.14645 6.85355C7.34171 7.04882 7.65829 7.04882 7.85355 6.85355L11.8536 2.85355C12.0488 2.65829 12.0488 2.34171 11.8536 2.14645C11.6583 1.95118 11.3417 1.95118 11.1464 2.14645L7.5 5.79289L3.85355 2.14645ZM3.85355 8.14645C3.65829 7.95118 3.34171 7.95118 3.14645 8.14645C2.95118 8.34171 2.95118 8.65829 3.14645 8.85355L7.14645 12.8536C7.34171 13.0488 7.65829 13.0488 7.85355 12.8536L11.8536 8.85355C12.0488 8.65829 12.0488 8.34171 11.8536 8.14645C11.6583 7.95118 11.3417 7.95118 11.1464 8.14645L7.5 11.7929L3.85355 8.14645Z" fill="#000000" class="svg-clicker"></path>
+                    </svg>
                 </p>
+                <div class="cookbook-recipes-wrapper">
+                    <ul class="cookbook-recipes">
+                        {% if cookbook.recipes %}
+                        {% for recipe in cookbook.recipes %}
+                        <li class="main-recipe-selector">
+                            <a href="/recipes/{{recipe.id}}/edit">{{recipe.name}}</a>
+                            <button data-recipe-id="{{recipe.id}}">Select >></button>
+                        </li>
+                        {% endfor %}
+                        <div>
+                            <form action='/users/{{g.user.id}}/cookbooks/{{cookbook.id}}/add_recipe' method="POST">
+                                {{ form.hidden_tag() }}
+                            
+                                {% for field in form if field.widget.input_type != 'hidden' %}
+                                  {% for error in field.errors %}
+                                    <span>{{ error }}</span>
+                                  {% endfor %}
+                                  {{ field(placeholder=field.label.text) }}
+                                {% endfor %}
+                                <button type="submit">add</button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <form action='/users/{{g.user.id}}/cookbooks/{{cookbook.id}}/add_recipe' method="POST">
+                                {{ form.hidden_tag() }}
+                            
+                                {% for field in form if field.widget.input_type != 'hidden' %}
+                                  {% for error in field.errors %}
+                                    <span>{{ error }}</span>
+                                  {% endfor %}
+                                  {{ field(placeholder=field.label.text) }}
+                                {% endfor %}
+                                <button type="submit">add</button>
+                        </form>
+                        {% endif %}
+                    </ul>
+                </div> 
         </div>
-        <ul class="cookbook-recipes">
-            {% if cookbook.recipes %}
-            {% for recipe in cookbook.recipes %}
-            <li>
-                <a href="/recipes/{{recipe.id}}/edit">{{recipe.name}}</a>
-                <button>Select >></button>
-            </li>
-            {% endfor %}
-            <div>
-                <form action='/users/{{g.user.id}}/cookbooks/{{cookbook.id}}/add_recipe' method="POST">
-                    {{ form.hidden_tag() }}
-                
-                    {% for field in form if field.widget.input_type != 'hidden' %}
-                      {% for error in field.errors %}
-                        <span>{{ error }}</span>
-                      {% endfor %}
-                      {{ field(placeholder=field.label.text) }}
-                    {% endfor %}
-                    <button type="submit">add</button>
-                </form>
-            </div>
-            {% else %}
-            <form action='/users/{{g.user.id}}/cookbooks/{{cookbook.id}}/add_recipe' method="POST">
-                    {{ form.hidden_tag() }}
-                
-                    {% for field in form if field.widget.input_type != 'hidden' %}
-                      {% for error in field.errors %}
-                        <span>{{ error }}</span>
-                      {% endfor %}
-                      {{ field(placeholder=field.label.text) }}
-                    {% endfor %}
-                    <button type="submit">add</button>
-            </form>
-            {% endif %}
-        </ul>
         {% endfor %}
         {% else %}
         <p>No cookbooks yet</p>
@@ -60,22 +65,62 @@
         {% endif %}
     </div>
     <div id="user-banner-grid">
-        <h5>{{g.user.username}}</h6>
-        <h5>{{g.user.full_name}}</h6>
+        <div class="profile-pic-wrapper">
+            <img src="/static/user-default.jpg" alt="">
+        </div>
+        <div class="profile-banner-info">
+            <h5>Username: {{g.user.username}}</h6>
+                <h5>{{g.user.full_name}}</h6>
+        </div>
+        <div class="profile-banner-stats">
+            <div>
+                cookbooks: {{g.user.cookbooks | length}}
+            </div>
+            <div>
+                recipes: {{g.user.recipes | length}}
+            </div>
+            
+        </div>
     </div>
     <div id="create-new-recipe-grid">
         <div>Create new <span class="recipe-accent">Recipe!</span></div>
-        <form action="/recipes/build">
-            <input type="text" placeholder="keyword">
-                <button>Go</button>
-        </form>
-        <form action="/recipes/build">
-            <button>Start from scratch</button>
-        </form>
+        <div>
+            <form id="edamam-search">
+                <input type="text" placeholder="keyword" id="edamam-search-input">
+                    <button>Go</button>
+            </form>
+        </div>
+        <div>
+            <form action="/recipes/build">
+                <button class="main-scratch-button">Start from scratch</button>
+            </form>
+        </div>
     </div>
-    <div id="recipe-disp-grid">
-        <h2>recipe!</h2>
+    <div id="recipe-disp-grid-wrapper">
+        <div id="recipe-disp-grid">
+            <div class="recipe-disp-header">
+                
+            </div>
+            <div class="recipe-disp-ingredients">
+    
+            </div>
+            <div class="recipe-disp-instructions">
+    
+            </div>
+        </div>
+        <div id="loading-wheel-wrapper">
+            <div class="load-wheel">
+    
+            </div>
+        </div>
+        <div id="recipe-disp-placeholder">
+            <p>
+                Select a recipe or search for what you want to eat!
+            </p>
+            
+        </div>
     </div>
+    
 </div>
 
 {% endblock %}
