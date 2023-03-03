@@ -107,8 +107,11 @@ def user_landing_page(user_id):
     form.recipe.choices = [(recipe.id, recipe.name)
                              for recipe in Recipe.query.all()]
     selected_user = User.query.get(user_id)
+    recipe_count=0
     cookbooks = selected_user.cookbooks
-    return render_template('main.html', cookbooks=cookbooks, form=form)
+    for cookbook in cookbooks:
+        recipe_count += len(cookbook.recipes)
+    return render_template('main.html', cookbooks=cookbooks, form=form, recipe_count=recipe_count)
 
 @app.route('/recipes/build')
 def recipe_from_scratch():
