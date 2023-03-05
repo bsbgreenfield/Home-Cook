@@ -1,5 +1,6 @@
 import os
 from flask import request, render_template, redirect, flash, Flask, session, g, jsonify
+import requests
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from models import db, connect_db, User, Cookbook, Recipe, Ingredient, Instruction
@@ -198,3 +199,8 @@ def send_recipe_data(recipe_id):
     return jsonify(recipe=selected_recipe.serialize())
 
 
+
+
+
+#*******************************************************************************
+#KrogerApi
