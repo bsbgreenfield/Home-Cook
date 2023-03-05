@@ -133,6 +133,7 @@ class Instruction(db.Model):
     
 
 
+
 class Note(db.Model):
 
     __tablename__ = 'notes'
@@ -151,9 +152,23 @@ class Ingredient(db.Model):
                    primary_key=True,
                    autoincrement=True)
     name = db.Column(db.String, nullable = False)
+    scientific_name = db.Column(db.String, nullable = True)
+    group_cat = db.Column(db.String, nullable = True)
+    sub_group = db.Column(db.String, nullable = True)
     price = db.Column(db.Float, nullable = True)
 
     parent_recipes = db.relationship('Recipe', secondary='recipes_ingredients', backref = 'ingredients')
+
+def populate_ingredients():
+    with open('food_import.txt', 'r') as f:
+            for ingredient in f:
+                new_entry = Ingredient(name=ingredient['name'],
+                                        scientific_name=ingredient['scientific_name'],
+                                          group=ingredient['group'],
+                                            sub_group=ingredient['sub_group'])
+                db.add(new_entry)
+                db.commit()
+
 
 class recipe_ingredient(db.Model):
 
