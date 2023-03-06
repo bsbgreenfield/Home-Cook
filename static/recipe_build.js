@@ -2,7 +2,9 @@ const ingredients = ['Angelica', 'Savoy cabbage', 'Silver linden', 'Kiwi', 'Alli
 
 const ingredientSearchBar = document.querySelector('#ingredient')
 const ingredientSuggestions = document.querySelector('#recipe-build-search')
-
+const ingredientDisplay = document.querySelector('.build-ingredients-display-wrapper')
+const curr_url = window.location.pathname
+const url_substr = curr_url.substring(0,10)
 function search(str) {
     let results = [];
     results = (ingredients.filter(val => val.toLowerCase().includes(str)));
@@ -25,13 +27,108 @@ function showSuggestions(results) {
         }
     }
 }
+async function getRecipeInfo(){
+    
+    let recipeInfo = await axios.get(`http://127.0.0.1:5000/api${url_substr}`)
+    for (let ingredient of recipeInfo.data.recipe.ingredients){
+        let newIngredient = document.createElement('div')
+        newIngredient.className = 'added-ingredient'
+        newIngredient.innerText = ingredient.name
+        let delete_ingedrient_btn = document.createElement('div')
+        delete_ingedrient_btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z"/></svg>'
+        delete_ingedrient_btn.className = 'delete-ingredient'
+        newIngredient.appendChild(delete_ingedrient_btn)
+        ingredientDisplay.appendChild(newIngredient)
+    }
+}
 
-function useSuggestion(e) {
+const delete_ingredient = async function delete_ingredient(e){
+    console.log(e.target.tagName)
+    if (e.target.tagName == 'svg'){
+        ingredient_goner = e.target.parentElement.parentElement
+        let body = {'ingredient_type': 'standard', 'ingredient_name': ingredient_goner.innerText}
+        let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/delete`, json=body)
+        if (response.data == 'success'){
+            ingredient_goner.remove()
+        }
+    }
+    if (e.target.tagName == 'path'){
+        ingredient_goner = e.target.parentElement.parentElement.parentElement
+        let body = {'ingredient_type': 'standard', 'ingredient_name': ingredient_goner.innerText}
+        let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/delete`, json=body)
+        if (response.data == 'success'){
+            ingredient_goner.remove()
+        }
+    }
+    
+    else{
+    }
+}
+
+ingredientDisplay.addEventListener('click', delete_ingredient)
+
+async function useSuggestion(e) {
     if (e.target.className == 'ingredient-choice') {
-        ingredientSearchBar.value = e.target.innerText;
-        ingredientSuggestions.innerHTML = '';
+        let newIngredient = document.createElement('div')
+        newIngredient.className = 'added-ingredient'
+        let ingredient_name= e.target.innerText
+        newIngredient.innerText = ingredient_name
+        let delete_ingedrient_btn = document.createElement('div')
+        delete_ingedrient_btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z"/></svg>'
+        delete_ingedrient_btn.className = 'delete-ingredient'
+        newIngredient.appendChild(delete_ingedrient_btn)
+        let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/${ingredient_name}/add`)
+        console.log(response)
+        if (response.data == 'success'){
+            ingredientDisplay.appendChild(newIngredient)
+            ingredientSearchBar.value = ''
+            ingredientSuggestions.innerHTML = ''
+        }
     }
 }
 
 ingredientSearchBar.addEventListener('keyup', searchHandler);
 ingredientSuggestions.addEventListener('click', useSuggestion);
+
+
+// instructions
+const instructionArea = document.querySelector('.build-instructions')
+const instructionInputArea = document.querySelector('#build-instructions-container')
+const newInstructionButton = document.querySelector('.new-instruction')
+
+
+const newInstructionLineClicker = function newInstructionLine(e){
+    let instructionCount = instructionInputArea.childElementCount + 1
+    let instructionLine = document.createElement('div')
+    instructionLine.className = 'instruction-line'
+    let instructionLabel = document.createElement('label')
+    instructionLabel.innerText = `${instructionCount}.`
+    instructionLine.appendChild(instructionLabel)
+    let instructionTextArea = document.createElement('textarea')
+    instructionTextArea.className = 'instruction-input'
+    instructionLine.appendChild(instructionTextArea)
+    instructionInputArea.appendChild(instructionLine)
+}
+
+newInstructionButton.addEventListener('click', newInstructionLineClicker)
+
+
+// submit 
+const saveRecipeButton = document.querySelector('.submit')
+
+const saveRecipeInfo = async function(e){
+    let data = {'instructions': []}
+    instructionData = Array.prototype.slice.call(instructionInputArea.children)
+    instructionData.forEach(element => {
+        let instructionText = element.querySelector('.instruction-input')
+        if (instructionText){
+            data['instructions'].push(instructionText.value)
+        }
+    });
+    console.log(url_substr)
+    let response = await axios.post(`http://127.0.0.1:5000/api${url_substr}/save`, json=data)
+    console.log(response)
+}
+saveRecipeButton.addEventListener('click', saveRecipeInfo)
+
+getRecipeInfo()

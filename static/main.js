@@ -32,12 +32,18 @@ for (let cookbook of selectableCookbooks) {
 const popOutRecipe = async function recipePopper(e) {
     if (e.target.tagName === 'BUTTON') {
         e.preventDefault();
-        edamamResults = document.querySelector('#edamam-suggestions-disp')
+
+        //clear out all other results
+        let edamamResults = document.querySelector('#edamam-suggestions-disp')
         if (edamamResults) {
             edamamResults.style.display = 'none'
         }
         mainRecipeArea.style.display = 'grid'
 
+        let placeholderText = document.querySelector('#recipe-disp-placeholder')
+        if (placeholderText){
+            placeholderText.style.display = 'none'
+        }
         // clear out previous recipe info
         recipeHeader.innerHTML = ''
         recipeIngredients.innerHTML = ''

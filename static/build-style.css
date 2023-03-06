@@ -6,7 +6,7 @@
     margin-left: 15px;
     margin-right: 15px;
     margin-top: 10px;
-    column-gap: 5px;
+    column-gap: 60px;
 }
 
 .build-ingredient{
@@ -50,6 +50,7 @@ margin-left: 40px;
     grid-column-end: 11;
     grid-row-start: 1;
     grid-row-end: 9;
+    overflow-y: scroll;
 }
 .build-button{
     grid-column-start: 9;
@@ -85,10 +86,11 @@ margin-left: 40px;
 }
 .build-search-display-wrapper{
     grid-column-start: 3;
-    grid-column-end: 7 ;
+    grid-column-end: 6;
     grid-row-start: 1;
     grid-row-end: 3;
     position: relative;
+    height: 80%;
 }
 #recipe-build-search{
     position: absolute;
@@ -106,6 +108,28 @@ margin-left: 40px;
     align-items: center;
     justify-content: center;
     background-color: rgb(161, 225, 161);
+    position: relative;
+}
+.added-ingredient{
+    height: 100%;
+    border: 1px solid black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(218, 52, 91);
+    position: relative;
+}
+.delete-ingredient{
+    position: absolute;
+    top: 0;
+    right: 0px;
+    height: 15px;
+    width: 15px;
+    color: red;
+    padding: 2px;
+}
+.delete-ingredient:hover{
+    background-color: rgb(242, 133, 133);
 }
 .ingredient-choice:hover{
     background-color: rgba(161, 225, 161, 0.262);
@@ -118,6 +142,7 @@ margin-left: 40px;
     background-color: rgb(218, 52, 91);
     font-size: 30px;
     font-style: italic;
+    cursor: pointer;
 }
 #build-recipe-form{
     grid-column-start: 1;
@@ -137,4 +162,44 @@ margin-left: 40px;
     padding: 5px;
     border: 2px solid rgb(9, 167, 247);
     background-color: rgb(234, 233, 233);
+}
+.build-ingredients-display-wrapper{
+    grid-column-start: 1;
+    grid-column-end: 6;
+    grid-row-start: 3;
+    grid-row-end: 11;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-auto-rows: minmax(35px, 30%);
+    gap: 10px;
+}
+#build-instructions-container{
+display: flex;
+justify-content: left;
+flex-direction: column;
+}
+.instruction-line{
+    display: flex;
+    align-items: center;
+}
+
+.instruction-input{
+    width: 90%;
+    border: none;
+    outline: none;
+    font-size: 20px;
+    background-attachment: local;
+    background-image:
+        linear-gradient(to right, white 10px, transparent 10px),
+        linear-gradient(to left, white 10px, transparent 10px),
+        repeating-linear-gradient(white, white 31px, #ccc 31px, #ccc 32px, white 32px);
+    line-height: 31px;
+    padding: 8px 10px;
+    resize: vertical;
+}
+.new-instruction{
+    margin-top: 10px;
+    border: none;
+    background-color: white;
+    cursor: pointer;
 }

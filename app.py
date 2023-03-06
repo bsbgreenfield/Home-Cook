@@ -130,7 +130,6 @@ def view_and_edit_recipe(recipe_id):
     build_search_form = BuildSearchForm()
     build_tag_form = BuildTagForm()
     build_notes_form = BuildNotesForm()
-    build_instructions_form = BuildInstructionsForm()
     if main_recipe_form.validate_on_submit():
         name = main_recipe_form.name.data
         cookbook_id = main_recipe_form.cookbook.data
@@ -143,8 +142,7 @@ def view_and_edit_recipe(recipe_id):
                             main_recipe_form=main_recipe_form,
                               build_search_form=build_search_form,
                                 build_tag_form=build_tag_form,
-                                  build_notes_form=build_notes_form,
-                                    build_instructions_form=build_instructions_form)
+                                  build_notes_form=build_notes_form)
 
 
 
@@ -199,8 +197,40 @@ def send_recipe_data(recipe_id):
     return jsonify(recipe=selected_recipe.serialize())
 
 
+@app.route('/api/recipes/<int:recipe_id>/edit/<string:ingredient_name>/add', methods = ['POST'])
+def add_ingredient_to_recipe(recipe_id, ingredient_name):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    ingredient = Ingredient.query.filter_by(name=ingredient_name).one()
+    if ingredient:
+        recipe.child_ingredients.append(ingredient)
+        db.session.commit()
+        return f'success'
+    return 'not ingredient'
 
+@app.route('/api/recipes/<int:recipe_id>/edit/delete', methods =['POST'])
+def delete_ingredient(recipe_id):
+    recipe = Recipe.query.get_or_404(recipe_id)
+    if request.json['ingredient_type'] == 'standard':
+        ingredient_name = request.json['ingredient_name']
+        ingredient = Ingredient.query.filter_by(name=ingredient_name).one()
+    if ingredient:
+        recipe.child_ingredients.remove(ingredient)
+        db.session.commit()
+        return 'success'
+    return 'failure'
 
+@app.route('/api/recipes/<int:recipe_id>/save', methods = ['POST'])
+def save_recipe(recipe_id):
+    recipe = Recipe.query.get(recipe_id)
+    instructions = list(request.json['instructions'])
+    print(instructions)
+    print(recipe.instructions)
+    for instruction in instructions:
+        if instruction != '':
+            new_instruction = Instruction(text=instruction, recipe_id = recipe_id)
+            recipe.instructions.append(new_instruction)
+    db.session.commit()
+    return jsonify(recipe=recipe.serialize())
 
 #*******************************************************************************
 #KrogerApi
