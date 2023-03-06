@@ -4,7 +4,7 @@ import requests
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from models import db, connect_db, User, Cookbook, Recipe, Ingredient, Instruction, CustomIngredient
-from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, BuildNotesForm, BuildInstructionsForm, RecipeQuickAdd, CustomIngredientForm
+from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, BuildNotesForm, RecipeQuickAdd
 
 CURR_USER_KEY = "curr_user"
 
@@ -104,15 +104,12 @@ def signup():
 
 @app.route('/users/<int:user_id>')
 def user_landing_page(user_id):
-    form = RecipeQuickAdd()
-    form.recipe.choices = [(recipe.id, recipe.name)
-                             for recipe in Recipe.query.all()]
     selected_user = User.query.get(user_id)
     recipe_count=0
     cookbooks = selected_user.cookbooks
     for cookbook in cookbooks:
         recipe_count += len(cookbook.recipes)
-    return render_template('main.html', cookbooks=cookbooks, form=form, recipe_count=recipe_count)
+    return render_template('main.html', cookbooks=cookbooks, recipe_count=recipe_count)
 
 @app.route('/recipes/build')
 def recipe_from_scratch():
@@ -130,13 +127,11 @@ def view_and_edit_recipe(recipe_id):
     build_search_form = BuildSearchForm()
     build_tag_form = BuildTagForm()
     build_notes_form = BuildNotesForm()
-    build_custom_ingredient_form = CustomIngredientForm()
     return render_template('recipe.html', recipe=selected_recipe,
                             main_recipe_form=main_recipe_form,
                               build_search_form=build_search_form,
                                 build_tag_form=build_tag_form,
-                                  build_notes_form=build_notes_form, 
-                                    build_custom_ingredient_form = build_custom_ingredient_form)
+                                  build_notes_form=build_notes_form)
 
 
 
@@ -158,11 +153,6 @@ def add_new_recipe(user_id, cookbook_id):
 @app.route('/users/<int:user_id>/cookbooks/add', methods=['GET', 'POST'])
 def add_new_cookbook(user_id):
     form = AddCookbookForm()
-    if Recipe.query.all():
-        form.recipes.choices = [(recipe.id, recipe.name)
-                                for recipe in Recipe.query.all()]
-    else:
-        form.recipes.choices = ['No Recipes Found']
     if form.validate_on_submit():
         name = form.name.data
         new_cookbook = Cookbook(name=name, user_id=user_id)
@@ -194,12 +184,20 @@ def send_recipe_data(recipe_id):
 @app.route('/api/recipes/<int:recipe_id>/edit/<string:ingredient_name>/add', methods = ['POST'])
 def add_ingredient_to_recipe(recipe_id, ingredient_name):
     recipe = Recipe.query.get_or_404(recipe_id)
-    ingredient = Ingredient.query.filter_by(name=ingredient_name).one()
-    if ingredient:
-        recipe.child_ingredients.append(ingredient)
+    if request.json['ingredient_type'] == 'standard':
+        ingredient = Ingredient.query.filter_by(name=ingredient_name).one()
+        if ingredient:
+            recipe.child_ingredients.append(ingredient)
+            db.session.commit()
+            return f'success'
+        return 'not ingredient'
+    elif request.json['ingredient_type'] == 'custom':
+        custom_ingredient = CustomIngredient(name=ingredient_name, recipe_id = recipe_id)
+        db.session.add(custom_ingredient)
         db.session.commit()
-        return f'success'
-    return 'not ingredient'
+        return 'success'
+    else:
+        return 'failed to add ingredient'
 
 @app.route('/api/recipes/<int:recipe_id>/edit/delete', methods =['POST'])
 def delete_ingredient(recipe_id):
@@ -215,21 +213,10 @@ def delete_ingredient(recipe_id):
 
 @app.route('/api/recipes/<int:recipe_id>/edit/save', methods = ['POST'])
 def save_recipe(recipe_id):
-    build_custom_ingredient_form = CustomIngredientForm()
     main_recipe_form = AddRecipeForm()
     main_recipe_form.cookbook.choices = [(cookbook.id, cookbook.name)
                              for cookbook in Cookbook.query.filter_by(user_id=g.user.id)]
     selected_recipe = Recipe.query.get(recipe_id)
-    
-    # add custom ingredients 
-    """ if build_custom_ingredient_form.validate_on_submit():
-        name = build_custom_ingredient_form.name.data
-        price = build_custom_ingredient_form.price.data
-        recipe_id = recipe_id
-        new_custom_ingredient = CustomIngredient(name=name, price=price, recipe_id=recipe_id)
-        db.session.add(new_custom_ingredient)
-        db.session.commit()
-        return redirect(f'/recipes/{recipe_id}/edit') """
     # save recipe name and cookbook data, redirect to user form
     # The ingredients data is saved as they are added, and so do  not need to be saved here
     if main_recipe_form.validate_on_submit():

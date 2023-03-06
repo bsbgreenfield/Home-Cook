@@ -61,8 +61,20 @@ const popOutRecipe = async function recipePopper(e) {
         //recipe ingredients
         console.log(response.data.recipe)
         let recipeIngredientlist = response.data.recipe.ingredients
-
+        let recipeCustomIngredients = response.data.recipe.custom_ingredients
         for (let ingredient of recipeIngredientlist) {
+            let ingredientWrapper = document.createElement('div')
+            let newIngredient = document.createElement('label');
+            let newIngredientCheckbox = document.createElement('input');
+            newIngredient.innerText = ingredient.name, newIngredient.setAttribute('for', `i${ingredient.id}`)
+            newIngredientCheckbox.id = `i${ingredient.id}`, newIngredientCheckbox.value = ingredient.price
+            newIngredientCheckbox.type = 'checkbox'
+            // add onclick event
+            ingredientWrapper.appendChild(newIngredient)
+            ingredientWrapper.appendChild(newIngredientCheckbox)
+            recipeIngredients.appendChild(ingredientWrapper)
+        }
+        for (let ingredient of recipeCustomIngredients) {
             let ingredientWrapper = document.createElement('div')
             let newIngredient = document.createElement('label');
             let newIngredientCheckbox = document.createElement('input');

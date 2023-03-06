@@ -21,7 +21,6 @@ class AddCookbookForm(FlaskForm):
     """ADD a new cookbook"""
 
     name = StringField('Name', validators = [DataRequired()])
-    recipes = SelectField('Recipes', validators=[Optional()])
 
 class AddRecipeForm(FlaskForm):
     """Add a new recipe"""
@@ -44,8 +43,6 @@ class BuildInstructionsForm(FlaskForm):
 class RecipeQuickAdd(FlaskForm):
     recipe = SelectField()
 
-class CustomIngredientForm(FlaskForm):
-    name = StringField('Ingredient Name', validators=[DataRequired()])
-    price = FloatField('Price: ', validators=[Optional()])
+
 
     
