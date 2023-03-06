@@ -49,7 +49,9 @@ New Recipe
         
           </div>
         </div>
-        
+        <div class="build-ingredients-display-wrapper">
+
+        </div>
         <div class="recipe-build build-notes bottom-tab">
             <form method="POST" id="build-notes-form" autocomplete="off">
                 {{ build_notes_form.hidden_tag() }}
@@ -62,8 +64,37 @@ New Recipe
                 {% endfor %}
             </form>
         </div>
-        <div class="recipe-build build-instructions bottom-tab">
+        <div class="recipe-build build-instructions">
           <h2>instructions</h2>
+            <div id='build-instructions-container'>
+            {% if not recipe.instructions %}
+            <div class="instruction-line">
+              <label for="1">1. </label>
+              <textarea  cols='60' rows="2" class="instruction-input" id="1"></textarea>
+            </div>
+             
+              <div class="instruction-line">
+                <label for="2">2. </label>  
+                <textarea  cols='60' rows="2" class="instruction-input" id="2"></textarea>
+              </div>
+             
+              <div class="instruction-line">
+                <label for="3">3. </label>
+                <textarea  cols='60' rows="2" class="instruction-input" id="3"></textarea>
+              </div>
+            
+            {% else %}
+              {% for instruction in recipe.instructions %}
+              <div class="instruction-line">
+                <label>{{recipe.instructions.index(instruction) + 1}} </label>
+                <textarea  cols='60' rows="2" class="instruction-input"> {{instruction.text}}</textarea>
+              </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+            <div>
+              <button class="new-instruction">+ new instruction</button>
+            </div>
         </div>
         <div class="build-button">
             <button type="submit" form="build-recipe-form" class="submit">Create Recipe</button>
