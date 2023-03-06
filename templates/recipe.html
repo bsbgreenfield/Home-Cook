@@ -50,14 +50,8 @@ New Recipe
           </div>
           <div id="custom-ingredient-form" style="display: none;">
             <form method="POST" id="build-custom-ingredient-form" autocomplete="off">
-              {{ build_custom_ingredient_form.hidden_tag() }}
               <p>make a custom ingredient!</p>
-              {% for field in build_custom_ingredient_form if field.widget.input_type != 'hidden' %}
-                {% for error in field.errors %}
-                  <span>{{ error }}</span>
-                {% endfor %}
-                <span>{{ field(placeholder=field.label.text) }}</span>
-              {% endfor %}
+              <input type="text" class="custom-ingr-input" placeholder="ingredient name">
               <div>
                 <button type="submit" form="build-custom-ingredient-form">Submit</button>
               </div>

@@ -29,31 +29,9 @@
                             <button data-recipe-id="{{recipe.id}}">Select >></button>
                         </li>
                         {% endfor %}
-                        <div>
-                            <form action='/users/{{g.user.id}}/cookbooks/{{cookbook.id}}/add_recipe' method="POST">
-                                {{ form.hidden_tag() }}
-                            
-                                {% for field in form if field.widget.input_type != 'hidden' %}
-                                  {% for error in field.errors %}
-                                    <span>{{ error }}</span>
-                                  {% endfor %}
-                                  {{ field(placeholder=field.label.text) }}
-                                {% endfor %}
-                                <button type="submit">add</button>
-                            </form>
-                        </div>
+                        
                         {% else %}
-                        <form action='/users/{{g.user.id}}/cookbooks/{{cookbook.id}}/add_recipe' method="POST">
-                                {{ form.hidden_tag() }}
-                            
-                                {% for field in form if field.widget.input_type != 'hidden' %}
-                                  {% for error in field.errors %}
-                                    <span>{{ error }}</span>
-                                  {% endfor %}
-                                  {{ field(placeholder=field.label.text) }}
-                                {% endfor %}
-                                <button type="submit">add</button>
-                        </form>
+                        <p>No Recipes yet!</p>
                         {% endif %}
                     </ul>
                 </div> 

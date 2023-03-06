@@ -101,7 +101,7 @@ class Recipe(db.Model):
             "rating":self.rating or 'unrated',
             'user_id':self.user_id,
             'ingredients': [{'id':ingredient.id, 'name': ingredient.name, 'price': ingredient.price} for ingredient in self.child_ingredients],
-            'custom_ingredients': [{'id': custom_ingredient.id, 'name': custom_ingredient.name, 'price': custom_ingredient.price} for custom_ingredient in self.custom_ingredients],
+            'custom_ingredients': [{'id': custom_ingredient.id, 'name': custom_ingredient.name} for custom_ingredient in self.custom_ingredients],
             'instructions': [{'id': instruction.id, 'text': instruction.text} for instruction in self.instructions]
         }
 class Tag(db.Model):
@@ -168,7 +168,6 @@ class CustomIngredient(db.Model):
                    primary_key=True,
                    autoincrement=True)
     name = db.Column(db.String, nullable = False)
-    price = db.Column(db.Float, nullable = True)
     recipe_id = db.Column(db.Integer, db.ForeignKey(
         'recipes.id', ondelete='CASCADE'), nullable=False)
 

@@ -4,6 +4,7 @@ const ingredientSearchBar = document.querySelector('#ingredient')
 const ingredientSuggestions = document.querySelector('#recipe-build-search')
 const ingredientDisplay = document.querySelector('.build-ingredients-display-wrapper')
 const custom_ingr_form = document.querySelector('#custom-ingredient-form')
+const customIngredientInput = document.querySelector('.custom-ingr-input')
 const curr_url = window.location.pathname
 function search(str) {
     let results = [];
@@ -15,6 +16,8 @@ function searchHandler(e) {
     ingredientSuggestions.innerHTML = '';
     let resultList = search(ingredientSearchBar.value.toLowerCase())
     if (resultList.length > 0){
+        ingredientSuggestions.style.display = 'grid'
+        custom_ingr_form.style.display = 'none'
         showSuggestions(resultList)
     }
     else{
@@ -68,16 +71,13 @@ const delete_ingredient = async function delete_ingredient(e){
             ingredient_goner.remove()
         }
     }
-    if (e.target.tagName == 'path'){
+    else if (e.target.tagName == 'path'){
         ingredient_goner = e.target.parentElement.parentElement.parentElement
         let body = {'ingredient_type': 'standard', 'ingredient_name': ingredient_goner.innerText}
         let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/delete`, json=body)
         if (response.data == 'success'){
             ingredient_goner.remove()
         }
-    }
-    
-    else{
     }
 }
 
@@ -93,7 +93,7 @@ async function useSuggestion(e) {
         delete_ingedrient_btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z"/></svg>'
         delete_ingedrient_btn.className = 'delete-ingredient'
         newIngredient.appendChild(delete_ingedrient_btn)
-        let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/${ingredient_name}/add`)
+        let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/${ingredient_name}/add`, json = {'ingredient_type': 'standard'})
         console.log(response)
         if (response.data == 'success'){
             ingredientDisplay.appendChild(newIngredient)
@@ -103,9 +103,29 @@ async function useSuggestion(e) {
     }
 }
 
+async function addCustomIngredient(e){
+    e.preventDefault()
+    let ingredientName = customIngredientInput.value
+    let newIngredient = document.createElement('div')
+    newIngredient.className = 'added-ingredient'
+    newIngredient.innerText = ingredientName
+    let delete_ingedrient_btn = document.createElement('div')
+        delete_ingedrient_btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z"/></svg>'
+        delete_ingedrient_btn.className = 'delete-ingredient'
+        newIngredient.appendChild(delete_ingedrient_btn)
+        let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/${ingredientName}/add`, json = {'ingredient_type': 'custom'})
+        if (response.data == 'success'){
+            ingredientDisplay.appendChild(newIngredient)
+            ingredientSearchBar.value = ''
+            custom_ingr_form.style.display = 'none'
+            ingredientSuggestions.style.display = 'block'
+        }
+
+}
+
 ingredientSearchBar.addEventListener('keyup', searchHandler);
 ingredientSuggestions.addEventListener('click', useSuggestion);
-
+custom_ingr_form.addEventListener('submit', addCustomIngredient);
 
 // instructions
 const instructionArea = document.querySelector('.build-instructions')
