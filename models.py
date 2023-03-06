@@ -90,6 +90,7 @@ class Recipe(db.Model):
         'Cookbook', backref='recipes')
     
     child_ingredients = db.relationship('Ingredient', secondary = 'recipes_ingredients', backref='recipes')
+    custom_ingredients = db.relationship('CustomIngredient',backref= 'recipe' )
     instructions = db.relationship('Instruction', backref='recipe')
     notes = db.relationship('Note', backref='recipe')
 
@@ -100,6 +101,7 @@ class Recipe(db.Model):
             "rating":self.rating or 'unrated',
             'user_id':self.user_id,
             'ingredients': [{'id':ingredient.id, 'name': ingredient.name, 'price': ingredient.price} for ingredient in self.child_ingredients],
+            'custom_ingredients': [{'id': custom_ingredient.id, 'name': custom_ingredient.name, 'price': custom_ingredient.price} for custom_ingredient in self.custom_ingredients],
             'instructions': [{'id': instruction.id, 'text': instruction.text} for instruction in self.instructions]
         }
 class Tag(db.Model):
@@ -159,16 +161,16 @@ class Ingredient(db.Model):
 
     parent_recipes = db.relationship('Recipe', secondary='recipes_ingredients', backref = 'ingredients')
 
-def populate_ingredients():
-    with open('food_import.txt', 'r') as f:
-            for ingredient in f:
-                new_entry = Ingredient(name=ingredient['name'],
-                                        scientific_name=ingredient['scientific_name'],
-                                          group=ingredient['group'],
-                                            sub_group=ingredient['sub_group'])
-                db.add(new_entry)
-                db.commit()
-
+class CustomIngredient(db.Model):
+    
+    __tablename__ = 'custom_ingredients'
+    id = db.Column(db.Integer,
+                   primary_key=True,
+                   autoincrement=True)
+    name = db.Column(db.String, nullable = False)
+    price = db.Column(db.Float, nullable = True)
+    recipe_id = db.Column(db.Integer, db.ForeignKey(
+        'recipes.id', ondelete='CASCADE'), nullable=False)
 
 class recipe_ingredient(db.Model):
 

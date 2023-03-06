@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, TextAreaField, SelectField
+from wtforms import StringField, PasswordField, TextAreaField, SelectField, FloatField
 from wtforms.validators import DataRequired, Email, Length, Optional
 
 class LoginForm(FlaskForm):
@@ -43,4 +43,9 @@ class BuildInstructionsForm(FlaskForm):
 
 class RecipeQuickAdd(FlaskForm):
     recipe = SelectField()
+
+class CustomIngredientForm(FlaskForm):
+    name = StringField('Ingredient Name', validators=[DataRequired()])
+    price = FloatField('Price: ', validators=[Optional()])
+
     
