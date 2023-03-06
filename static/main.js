@@ -51,7 +51,7 @@ const popOutRecipe = async function recipePopper(e) {
 
         // get new data and populate mainRecipeArea
         let selectedRecipeId = e.target.getAttribute('data-recipe-id')
-        let response = await axios.get(`http://127.0.0.1:5000/api/recipes/${selectedRecipeId}`)
+        let response = await axios.get(`http://127.0.0.1:5000/api/recipes/${selectedRecipeId}/edit/info`)
 
         // recipe header
         let recipeName = document.createElement('h2')

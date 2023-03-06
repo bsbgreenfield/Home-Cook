@@ -3,8 +3,8 @@ const ingredients = ['Angelica', 'Savoy cabbage', 'Silver linden', 'Kiwi', 'Alli
 const ingredientSearchBar = document.querySelector('#ingredient')
 const ingredientSuggestions = document.querySelector('#recipe-build-search')
 const ingredientDisplay = document.querySelector('.build-ingredients-display-wrapper')
+const custom_ingr_form = document.querySelector('#custom-ingredient-form')
 const curr_url = window.location.pathname
-const url_substr = curr_url.substring(0,10)
 function search(str) {
     let results = [];
     results = (ingredients.filter(val => val.toLowerCase().includes(str)));
@@ -14,7 +14,13 @@ function search(str) {
 function searchHandler(e) {
     ingredientSuggestions.innerHTML = '';
     let resultList = search(ingredientSearchBar.value.toLowerCase())
-    showSuggestions(resultList)
+    if (resultList.length > 0){
+        showSuggestions(resultList)
+    }
+    else{
+        ingredientSuggestions.style.display = 'none'
+        custom_ingr_form.style.display = 'block'
+    }
 }
 
 function showSuggestions(results) {
@@ -28,8 +34,8 @@ function showSuggestions(results) {
     }
 }
 async function getRecipeInfo(){
-    
-    let recipeInfo = await axios.get(`http://127.0.0.1:5000/api${url_substr}`)
+    let recipeInfo = await axios.get(`http://127.0.0.1:5000/api${curr_url}/info`)
+    console.log(recipeInfo)
     for (let ingredient of recipeInfo.data.recipe.ingredients){
         let newIngredient = document.createElement('div')
         newIngredient.className = 'added-ingredient'
@@ -39,6 +45,16 @@ async function getRecipeInfo(){
         delete_ingedrient_btn.className = 'delete-ingredient'
         newIngredient.appendChild(delete_ingedrient_btn)
         ingredientDisplay.appendChild(newIngredient)
+    }
+    for (let custom_ingredient of recipeInfo.data.recipe.custom_ingredients){
+        let newCustom = document.createElement('div')
+        newCustom.className = 'added-ingredient'
+        newCustom.innerText = custom_ingredient.name
+        let delete_ingedrient_btn = document.createElement('div')
+        delete_ingedrient_btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z"/></svg>'
+        delete_ingedrient_btn.className = 'delete-ingredient'
+        newCustom.appendChild(delete_ingedrient_btn)
+        ingredientDisplay.appendChild(newCustom)
     }
 }
 
@@ -116,19 +132,36 @@ newInstructionButton.addEventListener('click', newInstructionLineClicker)
 // submit 
 const saveRecipeButton = document.querySelector('.submit')
 
-const saveRecipeInfo = async function(e){
+const saveInstructionInfo = async function(e){
     let data = {'instructions': []}
-    instructionData = Array.prototype.slice.call(instructionInputArea.children)
+    let instructionData = Array.prototype.slice.call(instructionInputArea.children)
     instructionData.forEach(element => {
         let instructionText = element.querySelector('.instruction-input')
         if (instructionText){
             data['instructions'].push(instructionText.value)
         }
     });
-    console.log(url_substr)
-    let response = await axios.post(`http://127.0.0.1:5000/api${url_substr}/save`, json=data)
-    console.log(response)
+    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/save_instructions`, json=data)
 }
-saveRecipeButton.addEventListener('click', saveRecipeInfo)
+saveRecipeButton.addEventListener('click', saveInstructionInfo)
+
+/* const get_kroger_access_token = async function(){
+    let resp = await axios.get('/api/get_access_token')
+    let token = resp.data.access_token
+    access_token = token
+}
+
+krogerSearchButton = document.querySelector('#kroger')
+
+
+const search_kroger_ingredients = async function(e){
+    e.preventDefault()
+    let keyword = ingredientSearchBar.value
+    console.log('accesstoken',access_token)
+    let resp = await axios.get(`/api/ingredients/search/${keyword}/${access_token}`)
+    console.log(resp)
+}
+
+krogerSearchButton.addEventListener('click', search_kroger_ingredients) */
 
 getRecipeInfo()
