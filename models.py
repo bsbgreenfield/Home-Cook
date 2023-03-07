@@ -180,3 +180,4 @@ class recipe_ingredient(db.Model):
     ingredient_recipe = db.Column(
         db.Integer, db.ForeignKey('recipes.id', ondelete="cascade"), primary_key=True)
     
+    

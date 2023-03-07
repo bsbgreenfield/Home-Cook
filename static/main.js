@@ -41,7 +41,7 @@ const popOutRecipe = async function recipePopper(e) {
         mainRecipeArea.style.display = 'grid'
 
         let placeholderText = document.querySelector('#recipe-disp-placeholder')
-        if (placeholderText){
+        if (placeholderText) {
             placeholderText.style.display = 'none'
         }
         // clear out previous recipe info
@@ -53,60 +53,22 @@ const popOutRecipe = async function recipePopper(e) {
         let selectedRecipeId = e.target.getAttribute('data-recipe-id')
         let response = await axios.get(`http://127.0.0.1:5000/api/recipes/${selectedRecipeId}/edit/info`)
 
-        // recipe header
-        let recipeName = document.createElement('h2')
-        recipeName.innerText = response.data.recipe.name
-        recipeHeader.appendChild(recipeName)
-
-        //recipe ingredients
-        console.log(response.data.recipe)
-        let recipeIngredientlist = response.data.recipe.ingredients
-        let recipeCustomIngredients = response.data.recipe.custom_ingredients
-        for (let ingredient of recipeIngredientlist) {
-            let ingredientWrapper = document.createElement('div')
-            let newIngredient = document.createElement('label');
-            let newIngredientCheckbox = document.createElement('input');
-            newIngredient.innerText = ingredient.name, newIngredient.setAttribute('for', `i${ingredient.id}`)
-            newIngredientCheckbox.id = `i${ingredient.id}`, newIngredientCheckbox.value = ingredient.price
-            newIngredientCheckbox.type = 'checkbox'
-            // add onclick event
-            ingredientWrapper.appendChild(newIngredient)
-            ingredientWrapper.appendChild(newIngredientCheckbox)
-            recipeIngredients.appendChild(ingredientWrapper)
-        }
-        for (let ingredient of recipeCustomIngredients) {
-            let ingredientWrapper = document.createElement('div')
-            let newIngredient = document.createElement('label');
-            let newIngredientCheckbox = document.createElement('input');
-            newIngredient.innerText = ingredient.name, newIngredient.setAttribute('for', `i${ingredient.id}`)
-            newIngredientCheckbox.id = `i${ingredient.id}`, newIngredientCheckbox.value = ingredient.price
-            newIngredientCheckbox.type = 'checkbox'
-            // add onclick event
-            ingredientWrapper.appendChild(newIngredient)
-            ingredientWrapper.appendChild(newIngredientCheckbox)
-            recipeIngredients.appendChild(ingredientWrapper)
-        }
-
-        //recipe instructions
-        let recipeInstructionList = response.data.recipe.instructions
-        let instructionUl = document.createElement('ul')
-        for (let instruction of recipeInstructionList) {
-            let newInstruction = document.createElement('li')
-            newInstruction.innerText = instruction.text
-            instructionUl.appendChild(newInstruction)
-        }
-        recipeInstructions.appendChild(instructionUl)
+        generate_existing_recipe_markup(recipeHeader, recipeIngredients, recipeInstructions, response)
     }
 }
-if (recipeSelectArea ){
+if (recipeSelectArea) {
 
     recipeSelectArea.addEventListener('click', popOutRecipe)
 }
 
-
+let hits = []
 // create new recipe from keyword
 const searchKeyword = async function edamamSearch(e) {
     e.preventDefault();
+    previousSuggestions = document.querySelector('#edamam-suggestions-disp')
+    if (previousSuggestions){
+        previousSuggestions.remove()
+    }
     mainRecipeArea.style.display = 'none'
     let keywordTerm = keywordSearchInput.value;
     placeholder.style.display = 'none'
@@ -122,7 +84,7 @@ const searchKeyword = async function edamamSearch(e) {
     edamamSuggestionsArea.style.display = 'none'
 
     // append first five results to the grid
-    hits = []
+
     for (i = 0; i < 6; i++) {
         hits.push(response.data.hits[i])
     }
@@ -138,7 +100,7 @@ const searchKeyword = async function edamamSearch(e) {
 
 }
 
-if (keywordSearchForm){
+if (keywordSearchForm) {
     keywordSearchForm.addEventListener('submit', searchKeyword)
 }
 
@@ -194,6 +156,7 @@ function generateSuggestionsMarkup(recipeUri, recipeName, recipeImage, recipeSou
     cardInner.appendChild(imageWrapper)
     cardInner.appendChild(cardContents)
     recipeCard.appendChild(cardInner)
+    recipeCard.addEventListener('click', useEdamamRecipe)
     cardWrapper.appendChild(recipeCard)
 
     return cardWrapper
@@ -223,10 +186,36 @@ function extractEdamamData(hits) {
             recipeSource,
             recipeCuisine,
             ingredients)
+        newCard.firstChild.setAttribute('data-recipe-index', hits.indexOf(hit))
         cards.push(newCard)
     }
     return cards
 }
+// use edamam suggestions
+
+const useEdamamRecipe = async function (e) {
+    let hitIndex = e.currentTarget.getAttribute('data-recipe-index')
+    let recipeData = hits[hitIndex].recipe
+    let recipeCuisine = []
+    for (i = 0; i < 2; i++) {
+        recipeCuisine.push(recipeData.cuisineType[i])
+    }
+
+    let ingredients = []
+    for (let ingredient of recipeData.ingredients) {
+        ingredients.push(ingredient.food)
+    }
+    tinyJson = {
+        'name': recipeData.label,
+        'recipeUrl': recipeData.url,
+        'recipe_image': recipeData.image,
+        'recipe_cuisine': recipeCuisine,
+        'ingredients': ingredients
+    }
+    response = await axios.post('/recipes/build/edamam', json = tinyJson)
+    location.href = `http://127.0.0.1:5000${response.data}`
+}
+
 
 // collapsable rows and columns
 const expandRecipeRow = function expandRow(e) {
@@ -250,7 +239,55 @@ const expandRecipeRow = function expandRow(e) {
         }
     }
 }
-if (recipeSelectArea){
+if (recipeSelectArea) {
     recipeSelectArea.addEventListener('click', expandRecipeRow)
 }
 
+
+
+async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngredients, pageRecipeInstructions, response){
+
+     // recipe header
+     let recipeName = document.createElement('h2')
+     recipeName.innerText = response.data.recipe.name
+     pageRecipeHeader.appendChild(recipeName)
+
+     //recipe ingredients
+     console.log(response.data.recipe)
+     let recipeIngredientlist = response.data.recipe.ingredients
+     let recipeCustomIngredients = response.data.recipe.custom_ingredients
+     for (let ingredient of recipeIngredientlist) {
+         let ingredientWrapper = document.createElement('div')
+         let newIngredient = document.createElement('label');
+         let newIngredientCheckbox = document.createElement('input');
+         newIngredient.innerText = ingredient.name, newIngredient.setAttribute('for', `i${ingredient.id}`)
+         newIngredientCheckbox.id = `i${ingredient.id}`, newIngredientCheckbox.value = ingredient.price
+         newIngredientCheckbox.type = 'checkbox'
+         // add onclick event
+         ingredientWrapper.appendChild(newIngredient)
+         ingredientWrapper.appendChild(newIngredientCheckbox)
+         pageRecipeIngredients.appendChild(ingredientWrapper)
+     }
+     for (let ingredient of recipeCustomIngredients) {
+         let ingredientWrapper = document.createElement('div')
+         let newIngredient = document.createElement('label');
+         let newIngredientCheckbox = document.createElement('input');
+         newIngredient.innerText = ingredient.name, newIngredient.setAttribute('for', `c${ingredient.id}`)
+         newIngredientCheckbox.id = `c${ingredient.id}`, newIngredientCheckbox.value = ingredient.price
+         newIngredientCheckbox.type = 'checkbox'
+         // add onclick event
+         ingredientWrapper.appendChild(newIngredient)
+         ingredientWrapper.appendChild(newIngredientCheckbox)
+         pageRecipeIngredients.appendChild(ingredientWrapper)
+     }
+
+     //recipe instructions
+     let recipeInstructionList = response.data.recipe.instructions
+     let instructionUl = document.createElement('ul')
+     for (let instruction of recipeInstructionList) {
+         let newInstruction = document.createElement('li')
+         newInstruction.innerText = instruction.text
+         instructionUl.appendChild(newInstruction)
+     }
+     pageRecipeInstructions.appendChild(instructionUl)
+}

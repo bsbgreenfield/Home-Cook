@@ -13,6 +13,7 @@
 }
 .card-wrapper{
     border: 1px solid grey;
+    height: 100%;
 }
 .card-wrapper:hover{
     background-color: rgb(190, 190, 190);

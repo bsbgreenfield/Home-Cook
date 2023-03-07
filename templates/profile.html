@@ -10,7 +10,8 @@
 <div class="detail-disp-main">
     <div class="detail-content-grid">
         {% for cookbook in user.cookbooks %}
-        <div class="card-wrapper">
+        <a href="/cookbooks/{{cookbook.id}}">
+        <div class="card-wrapper cookbook-card">
             <div class="cookbook-card profile-card">
                 <div class="card-inner">
                     <div class="image-wrapper">
@@ -22,6 +23,8 @@
                 </div>
             </div>
         </div>
+        </a>
+       
         {% endfor %}
     </div>
 </div>

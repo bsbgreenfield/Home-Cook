@@ -10,23 +10,26 @@
 <div class="cookbook-display-wrapper">
     <div class="cookbook-display-grid">
         <div class="cookbook-display-header"> 
-            <span><a href="/users/{{cookbook.user.id}}">back to cookbooks</a></span>
+            <span><a href="/users/{{cookbook.user.id}}/profile">back to cookbooks</a></span>
             <span class="header">{{cookbook.name}}</span>
         </div>
         <div class="cookbook-display-recipe-sidebar">
                 {% for recipe in cookbook.recipes %}
-                <div class="recipe-sidebar-recipe-select">
+                <div class="recipe-sidebar-recipe-select" data-recipe-id="{{recipe.id}}">
                     {{ recipe.name }} 
                     <span><svg viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg" fill-rule="evenodd" clip-rule="evenodd" class="expand-svg"><path d="M4 .755l14.374 11.245-14.374 11.219.619.781 15.381-12-15.391-12-.609.755z" /></svg></span>
                 </div>
                 
                 {% endfor %}
         </div>
-        <div class="cookbook-display-recipe-main">
-            <div class="recipe-main-ingredients">
+        <div id="cookbook-display-recipe-main">
+            <div class="recipe-disp-header">
 
             </div>
-            <div class="recipe-main-instructions">
+            <div class="recipe-disp-ingredients">
+
+            </div>
+            <div class="recipe-disp-instructions">
 
             </div>
         </div>
