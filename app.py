@@ -118,6 +118,22 @@ def recipe_from_scratch():
     db.session.commit()     # figure out a way to not have to commit if recipe is cancelled?
     return redirect(f'/recipes/{new_recipe.id}/edit')
 
+@app.route('/recipes/build/edamam', methods= ['POST'])
+def recipe_from_edamam():
+    name = request.json['name']
+    recipe_url = request.json['recipeUrl']
+    recipe_cuisine = request.json['recipe_cuisine']
+    ingredients = request.json['ingredients']
+    new_recipe = Recipe(name=name, cookbook_id = None, user_id = g.user.id)
+    db.session.add(new_recipe)
+    db.session.commit()
+    for ingredient in ingredients:
+        newCustomIngredient = CustomIngredient(name=ingredient, recipe_id=new_recipe.id)
+        db.session.add(newCustomIngredient)
+        db.session.commit()
+    return f'/recipes/{new_recipe.id}/edit'
+    
+
 @app.route('/recipes/<int:recipe_id>/edit', methods = ['GET'])
 def view_and_edit_recipe(recipe_id):
     selected_recipe = Recipe.query.get(recipe_id)
@@ -184,14 +200,15 @@ def send_recipe_data(recipe_id):
 @app.route('/api/recipes/<int:recipe_id>/edit/<string:ingredient_name>/add', methods = ['POST'])
 def add_ingredient_to_recipe(recipe_id, ingredient_name):
     recipe = Recipe.query.get_or_404(recipe_id)
-    if request.json['ingredient_type'] == 'standard':
+    # check ingredientType
+    if request.json['ingredient_type'] == 'standard-ingredient':
         ingredient = Ingredient.query.filter_by(name=ingredient_name).one()
         if ingredient:
             recipe.child_ingredients.append(ingredient)
             db.session.commit()
             return f'success'
         return 'not ingredient'
-    elif request.json['ingredient_type'] == 'custom':
+    elif request.json['ingredient_type'] == 'custom-ingredient':
         custom_ingredient = CustomIngredient(name=ingredient_name, recipe_id = recipe_id)
         db.session.add(custom_ingredient)
         db.session.commit()
@@ -199,14 +216,23 @@ def add_ingredient_to_recipe(recipe_id, ingredient_name):
     else:
         return 'failed to add ingredient'
 
+@app.route('/api/recipes/<int:recipe_id>/edit/updateIngredient')
+def update_ingredient():
+    return 'UPDATETETETETE'
+    
 @app.route('/api/recipes/<int:recipe_id>/edit/delete', methods =['POST'])
 def delete_ingredient(recipe_id):
     recipe = Recipe.query.get_or_404(recipe_id)
     if request.json['ingredient_type'] == 'standard':
         ingredient_name = request.json['ingredient_name']
         ingredient = Ingredient.query.filter_by(name=ingredient_name).one()
-    if ingredient:
         recipe.child_ingredients.remove(ingredient)
+        db.session.commit()
+        return 'success'
+    elif request.json['ingredient_type'] == 'custom':
+        custom_ingredient_name = request.json['ingredient_name']
+        custom_ingredient = CustomIngredient.query.filter_by(name=custom_ingredient_name).one()
+        db.session.delete(custom_ingredient)
         db.session.commit()
         return 'success'
     return 'failure'
