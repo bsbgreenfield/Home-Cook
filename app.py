@@ -3,7 +3,7 @@ from flask import request, render_template, redirect, flash, Flask, session, g, 
 import requests
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
-from models import db, connect_db, User, Cookbook, Recipe, Ingredient, Instruction, CustomIngredient
+from models import db, connect_db, User, Cookbook, Recipe, Ingredient, Instruction, CustomIngredient, recipe_custom_ingredient, recipe_ingredient
 from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, BuildNotesForm, RecipeQuickAdd
 
 CURR_USER_KEY = "curr_user"
@@ -128,8 +128,18 @@ def recipe_from_edamam():
     db.session.add(new_recipe)
     db.session.commit()
     for ingredient in ingredients:
-        newCustomIngredient = CustomIngredient(name=ingredient, recipe_id=new_recipe.id)
-        db.session.add(newCustomIngredient)
+        print(ingredient)
+        new_custom = CustomIngredient(name=ingredient['food'])
+        new_recipe.child_custom_ingredients.append(new_custom)
+        db.session.commit()
+
+        # add in associated quantity and measure
+        relational_table_row = recipe_custom_ingredient.query.filter(
+            (recipe_custom_ingredient.recipe_custom_ingr == new_custom.id) &
+              (recipe_custom_ingredient.ingredient_recipe == new_recipe.id)).first()
+        relational_table_row.quantity = ingredient.get('quantity', None)
+        relational_table_row.measure = ingredient.get('measure', None)
+        db.session.add(relational_table_row)
         db.session.commit()
     return f'/recipes/{new_recipe.id}/edit'
     
@@ -209,8 +219,10 @@ def add_ingredient_to_recipe(recipe_id, ingredient_name):
             return f'success'
         return 'not ingredient'
     elif request.json['ingredient_type'] == 'custom-ingredient':
-        custom_ingredient = CustomIngredient(name=ingredient_name, recipe_id = recipe_id)
-        db.session.add(custom_ingredient)
+        custom_ingredient = CustomIngredient(name=ingredient_name)
+        #db.session.add(custom_ingredient)
+        #db.session.commit()
+        recipe.child_custom_ingredients.append(custom_ingredient)
         db.session.commit()
         return 'success'
     else:

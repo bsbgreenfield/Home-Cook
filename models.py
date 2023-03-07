@@ -90,7 +90,7 @@ class Recipe(db.Model):
         'Cookbook', backref='recipes')
     
     child_ingredients = db.relationship('Ingredient', secondary = 'recipes_ingredients', backref='recipes')
-    custom_ingredients = db.relationship('CustomIngredient',backref= 'recipe' )
+    child_custom_ingredients = db.relationship('CustomIngredient', secondary = 'recipes_custom_ingredients', backref= 'recipe' )
     instructions = db.relationship('Instruction', backref='recipe')
     notes = db.relationship('Note', backref='recipe')
 
@@ -168,8 +168,7 @@ class CustomIngredient(db.Model):
                    primary_key=True,
                    autoincrement=True)
     name = db.Column(db.String, nullable = False)
-    recipe_id = db.Column(db.Integer, db.ForeignKey(
-        'recipes.id', ondelete='CASCADE'), nullable=False)
+    parent_recipes = db.relationship('Recipe', secondary='recipes_custom_ingredients', backref = 'custom_ingredients')
 
 class recipe_ingredient(db.Model):
 
@@ -179,5 +178,19 @@ class recipe_ingredient(db.Model):
         db.Integer, db.ForeignKey('ingredients.id', ondelete="SET NULL"), primary_key=True)
     ingredient_recipe = db.Column(
         db.Integer, db.ForeignKey('recipes.id', ondelete="cascade"), primary_key=True)
-    
-    
+    quantity = db.Column(db.String, nullable = True)
+
+class recipe_custom_ingredient(db.Model):
+
+    __tablename__ = 'recipes_custom_ingredients'
+
+    id = db.Column(db.Integer,
+                   primary_key=True,
+                   autoincrement=True)
+    recipe_custom_ingr = db.Column(
+        db.Integer, db.ForeignKey('custom_ingredients.id', ondelete="SET NULL"), nullable=False)
+    ingredient_recipe = db.Column(
+        db.Integer, db.ForeignKey('recipes.id', ondelete="cascade"), nullable=False)
+    quantity = db.Column(db.Integer, nullable= True)
+    measure = db.Column(db.String, nullable = True)
+    price = db.Column(db.Integer, nullable = True)
