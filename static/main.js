@@ -203,7 +203,8 @@ const useEdamamRecipe = async function (e) {
 
     let ingredients = []
     for (let ingredient of recipeData.ingredients) {
-        ingredients.push(ingredient.food)
+        let new_ingredient = {'food': ingredient.food, 'quantity': ingredient.quantity, 'measure': ingredient.measure}
+        ingredients.push(new_ingredient)
     }
     tinyJson = {
         'name': recipeData.label,
