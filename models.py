@@ -191,6 +191,6 @@ class recipe_custom_ingredient(db.Model):
         db.Integer, db.ForeignKey('custom_ingredients.id', ondelete="SET NULL"), nullable=False)
     ingredient_recipe = db.Column(
         db.Integer, db.ForeignKey('recipes.id', ondelete="cascade"), nullable=False)
-    quantity = db.Column(db.Integer, nullable= True)
+    quantity = db.Column(db.String, nullable= True)
     measure = db.Column(db.String, nullable = True)
     price = db.Column(db.Integer, nullable = True)

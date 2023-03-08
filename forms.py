@@ -29,7 +29,7 @@ class AddRecipeForm(FlaskForm):
     cookbook = SelectField('Add to a Cookbook',  validators=[Optional()] )
 
 class BuildSearchForm(FlaskForm):
-    ingredient = StringField('Ingredient', validators=[DataRequired()])
+    ingredient = StringField('Search', validators=[DataRequired()])
 
 class BuildTagForm(FlaskForm):
     tag = StringField('Tag', validators = [DataRequired()])

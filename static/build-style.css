@@ -118,9 +118,10 @@ margin-left: 40px;
 .added-ingredient{
     height: 100%;
     border: 1px solid black;
+    padding-left: 3px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    text-align: left;
     justify-content: center;
     background-color: rgb(218, 52, 91);
     position: relative;
@@ -135,9 +136,26 @@ margin-left: 40px;
     padding: 2px;
 }
 
-.ingredient-quantity-container input{
-    width: 40%;
+.ingredient-quantity, .ingredient-measure{
+    background-color: transparent;
+    outline: none;
+    border: none;
     margin-top: 10px;
+}
+.ingredient-quantity{
+    width: 2ch;
+}
+.ingredient-measure{
+    width: 10ch;
+}
+.ingredient-quantity-container button{
+    background-color: transparent;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+}
+::placeholder{
+    color: black;
 }
 .delete-ingredient:hover{
     background-color: rgb(242, 133, 133);
