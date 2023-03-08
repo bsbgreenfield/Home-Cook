@@ -206,6 +206,10 @@ def send_recipe_data(recipe_id):
     selected_recipe = Recipe.query.get(recipe_id)
     return jsonify(recipe=selected_recipe.serialize())
 
+@app.route('/api/recipes/<int:recipe_id>/edit/ingredient_info')
+def send_ingredient_data(recipe_id):
+    recipe_rows = {row.recipe_custom_ingr: (row.quantity, row.measure) for row in recipe_custom_ingredient.query.filter_by(ingredient_recipe=recipe_id).all()}
+    return jsonify(recipe_rows)
 
 @app.route('/api/recipes/<int:recipe_id>/edit/<string:ingredient_name>/add', methods = ['POST'])
 def add_ingredient_to_recipe(recipe_id, ingredient_name):
@@ -228,9 +232,16 @@ def add_ingredient_to_recipe(recipe_id, ingredient_name):
     else:
         return 'failed to add ingredient'
 
-@app.route('/api/recipes/<int:recipe_id>/edit/updateIngredient')
-def update_ingredient():
-    return 'UPDATETETETETE'
+@app.route('/api/recipes/<int:recipe_id>/edit/updateIngredient', methods = ['POST'])
+def update_ingredient(recipe_id):
+    relational_table_row = recipe_custom_ingredient.query.filter(
+            (recipe_custom_ingredient.recipe_custom_ingr == request.json['id']) &
+              (recipe_custom_ingredient.ingredient_recipe == recipe_id)).first()
+    relational_table_row.quantity = request.json['quantity']
+    relational_table_row.measure = request.json['measure']
+    db.session.commit()
+    response = {'quantity': relational_table_row.quantity, 'measure': relational_table_row.measure}
+    return jsonify(response)
     
 @app.route('/api/recipes/<int:recipe_id>/edit/delete', methods =['POST'])
 def delete_ingredient(recipe_id):

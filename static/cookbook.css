@@ -3,12 +3,16 @@
     display: flex;
     justify-content: center;
 }
+.profile-user-banner h1{
+    margin-block-end: 2px;
+    margin-block-start: 0;
+}
 .cookbook-display-grid{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-    grid-template-rows: repeat(7, 1fr);
+    grid-template-rows: repeat(9, 1fr);
     gap: 5px;
-    width: 80%;
+    width: 90%;
 }
 .cookbook-display-grid div{
     border: 1px solid black;
@@ -49,7 +53,7 @@
     grid-column-start: 2;
     grid-column-end: 6;
     grid-row-start: 2;
-    grid-row-end: 7;
+    grid-row-end: 10;
     display: grid;
     gap: 5px;
     grid-template-columns: 1fr;
@@ -60,14 +64,14 @@ margin-left: 5px;
 margin-right: 5px;
 }
 .cookbook-display-rating{
-    grid-column-start: 2;
-    grid-column-end: 3;
+    grid-column-start: 1;
+    grid-column-end: 2;
     grid-row-start: 7;
     grid-row-end:8
 }
 .cookbook-display-comment{
-    grid-column-start: 4;
-    grid-column-end: 6;
-    grid-row-start: 7;
-    grid-row-end:8
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 8;
+    grid-row-end:10;
 }

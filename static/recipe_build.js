@@ -15,12 +15,12 @@ function search(str) {
 function searchHandler(e) {
     ingredientSuggestions.innerHTML = '';
     let resultList = search(ingredientSearchBar.value.toLowerCase())
-    if (resultList.length > 0){
+    if (resultList.length > 0) {
         ingredientSuggestions.style.display = 'grid'
         custom_ingr_form.style.display = 'none'
         showSuggestions(resultList)
     }
-    else{
+    else {
         ingredientSuggestions.style.display = 'none'
         custom_ingr_form.style.display = 'block'
     }
@@ -36,83 +36,147 @@ function showSuggestions(results) {
         }
     }
 }
-async function getRecipeInfo(){
+async function getRecipeInfo() {
     let recipeInfo = await axios.get(`http://127.0.0.1:5000/api${curr_url}/info`)
     console.log(recipeInfo)
-    for (let ingredient of recipeInfo.data.recipe.ingredients){
-      rebuildRecipeMarkupOnLoad('standard-ingredient', ingredient)
+    let recipeSpecificIngredientinfo = await axios.get(`http://127.0.0.1:5000/api${curr_url}/ingredient_info`)
+    console.log(recipeSpecificIngredientinfo.data)
+    for (let ingredient of recipeInfo.data.recipe.ingredients) {
+        let ingredientData = recipeSpecificIngredientinfo.data[`${ingredient.id}`]
+        rebuildRecipeMarkupOnLoad('standard-ingredient', ingredient, ingredientData)
     }
-    for (let custom_ingredient of recipeInfo.data.recipe.custom_ingredients){
-       rebuildRecipeMarkupOnLoad('custom-ingredient', custom_ingredient)
+    for (let custom_ingredient of recipeInfo.data.recipe.custom_ingredients) {
+        let customIngredientData = recipeSpecificIngredientinfo.data[`${custom_ingredient.id}`]
+        rebuildRecipeMarkupOnLoad('custom-ingredient', custom_ingredient, customIngredientData)
     }
 }
 
-function rebuildRecipeMarkupOnLoad(secondaryClass, ingredient){
+function rebuildRecipeMarkupOnLoad(secondaryClass, ingredient, ingredientData) {
     let newIngredient = document.createElement('div')
-        newIngredient.classList.add('added-ingredient') 
-        newIngredient.classList.add(secondaryClass)
-        newIngredient.innerText = ingredient.name
-        newIngredient.addEventListener('click', delete_ingredient)
+    newIngredient.classList.add('added-ingredient')
+    newIngredient.classList.add(secondaryClass)
+    newIngredient.setAttribute('data-ingredient-id', ingredient.id)
+    newIngredient.innerText = ingredient.name
+    newIngredient.addEventListener('click', delete_ingredient)
 
-        let delete_ingedrient_btn = document.createElement('div')
-        delete_ingedrient_btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z"/></svg>'
-        delete_ingedrient_btn.className = 'delete-ingredient'
+    let delete_ingedrient_btn = document.createElement('div')
+    delete_ingedrient_btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z"/></svg>'
+    delete_ingedrient_btn.className = 'delete-ingredient'
 
-        newIngredient.appendChild(delete_ingedrient_btn)
+    newIngredient.appendChild(delete_ingedrient_btn)
 
-        // quantity form
-        let quantityForm = document.createElement('div')
-        quantityForm.className = 'ingredient-quantity-container'
+    // quantity display and form
+    let quantityFormWrapper = document.createElement('div')
+    quantityFormWrapper.className = 'ingredient-quantity-container'
 
-        let quantityInput = document.createElement('input')
-        quantityInput.placeholder = 'Quantity'
-        quantityForm.appendChild(quantityInput)
-        let saveQuantityButton = document.createElement('button')
-        saveQuantityButton.innerText = '+'
-        quantityForm.appendChild(saveQuantityButton)
 
-        newIngredient.appendChild(quantityForm)
-        ingredientDisplay.appendChild(newIngredient)
+    let inputContainer = document.createElement('div')
+
+    let quantityInput = document.createElement('input')
+    let measureInput = document.createElement('input')
+    quantityInput.className = 'ingredient-quantity', measureInput.className = 'ingredient-measure';
+    quantityInput.value = `${ingredientData[0]}`,  measureInput.value = `${ingredientData[1]}`;
+    quantityInput.readOnly = true, measureInput.readOnly=true;
+    inputContainer.appendChild(quantityInput), inputContainer.appendChild(measureInput)
+
+    let saveQuantityButton = document.createElement('button')
+    saveQuantityButton.innerText = 'edit'
+    inputContainer.appendChild(saveQuantityButton)
+    quantityFormWrapper.appendChild(inputContainer)
+
+    newIngredient.appendChild(quantityFormWrapper)
+    newIngredient.addEventListener('click', editIngredientQuantity)
+
+    ingredientDisplay.appendChild(newIngredient)
 }
-const delete_ingredient = async function delete_ingredient(e){
-    console.log(e.target.parentElement)
 
-    if (e.target.tagName == 'svg' || e.target.tagName == 'path'){
-        if (e.currentTarget.classList.contains('standard-ingredient')){
+const editIngredientQuantity = function (e) {
+    e.preventDefault()
+    console.log(e.target.tagName)
+    if (e.target.tagName == 'BUTTON') {
+        e.target.innerText = 'save';
+        let measure = e.target.previousSibling
+        let quantity =  e.target.previousSibling.previousSibling
+        measure.style.backgroundColor = '#efefef', quantity.style.backgroundColor = '#efefef'
+        measure.readOnly = false, quantity.readOnly = false
+        e.currentTarget.removeEventListener('click', editIngredientQuantity)
+        e.currentTarget.addEventListener('click', saveIngredientQuantity)
+    }
+}
+
+const saveIngredientQuantity = async function (e) {
+    e.preventDefault()
+    if (e.target.tagName == 'BUTTON') {
+        e.target.innerText = 'edit';
+        let measure = e.target.previousSibling
+        let quantity =  e.target.previousSibling.previousSibling
+        measure.style.backgroundColor = 'transparent', quantity.style.backgroundColor = 'transparent'
+        measure.readOnly = true, quantity.readOnly = true
+        let ingredientId = e.currentTarget.getAttribute('data-ingredient-id')
+        let ingredientType;
+        if (e.currentTarget.classList.contains('custom-ingredient')) {
+            ingredientType = 'custom-ingredient'
+        }
+        else if (e.currentTarget.classList.contains('standard-ingredient')) {
+            ingredientType = 'standard-ingredient'
+        }
+        let newQuantity = quantity.value
+        let newMeasure = measure.value
+        let data = {
+            'id': ingredientId,
+            'type': ingredientType,
+            "quantity": newQuantity,
+            "measure": newMeasure,
+        }
+        let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/updateIngredient`,
+                                         json = data)
+        console.log(response)
+        quantity.value = `${response.data.quantity}`
+        measure.value = `${response.data.measure}`
+        e.currentTarget.removeEventListener('click', saveIngredientQuantity)
+        e.currentTarget.addEventListener('click', editIngredientQuantity)
+    }
+}
+
+
+const delete_ingredient = async function delete_ingredient(e) {
+
+    if (e.target.tagName == 'svg' || e.target.tagName == 'path') {
+        if (e.currentTarget.classList.contains('standard-ingredient')) {
             delete_ingredient_logic(e.currentTarget, 'standard')
         }
-        else if (e.currentTarget.classList.contains('custom-ingredient')){
+        else if (e.currentTarget.classList.contains('custom-ingredient')) {
             delete_ingredient_logic(e.currentTarget, 'custom')
         }
     }
-   /*  if (e.target.parentElement.classList.contains('standard-ingredient')){
-        if (e.target.tagName == 'svg'){
-            ingredient_goner = e.target.parentElement.parentElement
-            delete_ingredient_logic(ingredient_goner, 'standard')
-        }
-        else if (e.target.tagName == 'path'){
-            ingredient_goner = e.target.parentElement.parentElement.parentElement
-            delete_ingredient_logic(ingredient_goner, 'standard')
-        }
-    }
-    else if (e.target.parentElement.classList.contains('custom-ingredient')){
-        console.log('customingr')
-        if (e.target.tagName == 'svg'){
-            ingredient_goner = e.target.parentElement.parentElement
-            delete_ingredient_logic(ingredient_goner, 'custom')
-        }
-        else if (e.target.tagName == 'path'){
-            ingredient_goner = e.target.parentElement.parentElement.parentElement
-            delete_ingredient_logic(ingredient_goner, 'custom')
-        }
-    } */
+    /*  if (e.target.parentElement.classList.contains('standard-ingredient')){
+         if (e.target.tagName == 'svg'){
+             ingredient_goner = e.target.parentElement.parentElement
+             delete_ingredient_logic(ingredient_goner, 'standard')
+         }
+         else if (e.target.tagName == 'path'){
+             ingredient_goner = e.target.parentElement.parentElement.parentElement
+             delete_ingredient_logic(ingredient_goner, 'standard')
+         }
+     }
+     else if (e.target.parentElement.classList.contains('custom-ingredient')){
+         console.log('customingr')
+         if (e.target.tagName == 'svg'){
+             ingredient_goner = e.target.parentElement.parentElement
+             delete_ingredient_logic(ingredient_goner, 'custom')
+         }
+         else if (e.target.tagName == 'path'){
+             ingredient_goner = e.target.parentElement.parentElement.parentElement
+             delete_ingredient_logic(ingredient_goner, 'custom')
+         }
+     } */
 
 }
 
-async function delete_ingredient_logic(ingredient_goner, ingrType){
-    let body = {'ingredient_type': `${ingrType}`, 'ingredient_name': ingredient_goner.innerText}
-    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/delete`, json=body)
-    if (response.data == 'success'){
+async function delete_ingredient_logic(ingredient_goner, ingrType) {
+    let body = { 'ingredient_type': `${ingrType}`, 'ingredient_name': ingredient_goner.innerText }
+    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/delete`, json = body)
+    if (response.data == 'success') {
         ingredient_goner.remove()
     }
 }
@@ -122,16 +186,16 @@ async function useSuggestion(e) {
     console.log(e.target)
     if (e.target.className == 'ingredient-choice') {
         console.log('here')
-    generateIngredientMarkup(e.target.innerText, 'standard-ingredient')
-}
+        generateIngredientMarkup(e.target.innerText, 'standard-ingredient')
+    }
 }
 
-async function addCustomIngredient(e){
+async function addCustomIngredient(e) {
     e.preventDefault()
     generateIngredientMarkup(customIngredientInput.value, 'custom-ingredient')
 }
 
-async function generateIngredientMarkup( ingredientInputValue, ingrType){
+async function generateIngredientMarkup(ingredientInputValue, ingrType) {
     let ingredientName = ingredientInputValue
     let newIngredient = document.createElement('div')
     newIngredient.classList.add('added-ingredient')
@@ -150,22 +214,27 @@ async function generateIngredientMarkup( ingredientInputValue, ingrType){
     quantityForm.className = 'ingredient-quantity-container'
 
     let quantityInput = document.createElement('input')
-    quantityInput.placeholder = 'Quantity'
-    quantityForm.appendChild(quantityInput)
+    quantityInput.placeholder = '#'
+    let measureInput = document.createElement('input')
+    measureInput.placeholder = '"#"'
+    quantityInput.className = 'ingredient-quantity'
+    measureInput.className = 'ingredient-measure'
+    quantityForm.appendChild(quantityInput), quantityForm.appendChild(measureInput)
     let saveQuantityButton = document.createElement('button')
-    saveQuantityButton.innerText = '+'
+    saveQuantityButton.innerText = 'add an amount'
     quantityForm.appendChild(saveQuantityButton)
 
     newIngredient.appendChild(quantityForm)
 
-    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/${ingredientName}/add`, json = { 'ingredient_type':`${ingrType}`})
-    if (response.data == 'success'){
-            ingredientDisplay.appendChild(newIngredient)
-            ingredientSearchBar.value = ''
-            custom_ingr_form.style.display = 'none'
-            ingredientSuggestions.innerHTML = ''
-            ingredientSuggestions.style.display = 'grid'
-        }
+    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/${ingredientName}/add`, json = { 'ingredient_type': `${ingrType}` })
+    if (response.data == 'success') {
+        ingredientDisplay.appendChild(newIngredient)
+        newIngredient.addEventListener('click', editIngredientQuantity)
+        ingredientSearchBar.value = ''
+        custom_ingr_form.style.display = 'none'
+        ingredientSuggestions.innerHTML = ''
+        ingredientSuggestions.style.display = 'grid'
+    }
 
 }
 
@@ -180,7 +249,7 @@ const instructionInputArea = document.querySelector('#build-instructions-contain
 const newInstructionButton = document.querySelector('.new-instruction')
 
 
-const newInstructionLineClicker = function newInstructionLine(e){
+const newInstructionLineClicker = function newInstructionLine(e) {
     let instructionCount = instructionInputArea.childElementCount + 1
     let instructionLine = document.createElement('div')
     instructionLine.className = 'instruction-line'
@@ -199,16 +268,16 @@ newInstructionButton.addEventListener('click', newInstructionLineClicker)
 // submit 
 const saveRecipeButton = document.querySelector('.submit')
 
-const saveInstructionInfo = async function(e){
-    let data = {'instructions': []}
+const saveInstructionInfo = async function (e) {
+    let data = { 'instructions': [] }
     let instructionData = Array.prototype.slice.call(instructionInputArea.children)
     instructionData.forEach(element => {
         let instructionText = element.querySelector('.instruction-input')
-        if (instructionText){
+        if (instructionText) {
             data['instructions'].push(instructionText.value)
         }
     });
-    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/save_instructions`, json=data)
+    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/save_instructions`, json = data)
 }
 saveRecipeButton.addEventListener('click', saveInstructionInfo)
 
