@@ -1,5 +1,5 @@
 .cookbook-display-wrapper{
-    height: 80vh;
+    height: 85vh;
     display: flex;
     justify-content: center;
 }
@@ -13,8 +13,9 @@
     grid-template-rows: repeat(9, 1fr);
     gap: 5px;
     width: 90%;
+    margin-top: 20px;
 }
-.cookbook-display-grid div{
+.cookbook-display-grid  div{
     border: 1px solid black;
 }
 .cookbook-display-header{
@@ -22,9 +23,9 @@
     grid-column-end: 6;
     grid-row-start: 1;
     grid-row-end: 2;
-    display: flex;
-    justify-content: space-between;
+    text-align: center;
 }
+
 .cookbook-display-recipe-sidebar{
     grid-column-start: 1;
     grid-column-end: 2;

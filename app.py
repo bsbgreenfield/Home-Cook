@@ -208,8 +208,9 @@ def send_recipe_data(recipe_id):
 
 @app.route('/api/recipes/<int:recipe_id>/edit/ingredient_info')
 def send_ingredient_data(recipe_id):
-    recipe_rows = {row.recipe_custom_ingr: (row.quantity, row.measure) for row in recipe_custom_ingredient.query.filter_by(ingredient_recipe=recipe_id).all()}
-    return jsonify(recipe_rows)
+    recipe_custom_rows = {f'c{row.recipe_custom_ingr}': (row.quantity, row.measure) for row in recipe_custom_ingredient.query.filter_by(ingredient_recipe=recipe_id).all()}
+    recipe_standard_rows = {f's{row.recipe_ingredient}': (row.quantity, row.measure) for row in recipe_ingredient.query.filter_by(ingredient_recipe=recipe_id).all()}
+    return jsonify(customData = recipe_custom_rows, standardData = recipe_standard_rows)
 
 @app.route('/api/recipes/<int:recipe_id>/edit/<string:ingredient_name>/add', methods = ['POST'])
 def add_ingredient_to_recipe(recipe_id, ingredient_name):
@@ -217,45 +218,73 @@ def add_ingredient_to_recipe(recipe_id, ingredient_name):
     # check ingredientType
     if request.json['ingredient_type'] == 'standard-ingredient':
         ingredient = Ingredient.query.filter_by(name=ingredient_name).one()
+        response = {'id': f's{ingredient.id}', 'name': ingredient.name}
         if ingredient:
             recipe.child_ingredients.append(ingredient)
             db.session.commit()
-            return f'success'
+            return jsonify(response)
         return 'not ingredient'
     elif request.json['ingredient_type'] == 'custom-ingredient':
-        custom_ingredient = CustomIngredient(name=ingredient_name)
-        #db.session.add(custom_ingredient)
-        #db.session.commit()
-        recipe.child_custom_ingredients.append(custom_ingredient)
-        db.session.commit()
-        return 'success'
+        # check if custom ingredient already exists
+        existing_custom_ingredient = CustomIngredient.query.filter_by(name=ingredient_name).first()
+        if existing_custom_ingredient:
+            # if it already exists, check if it already exists in this recipe
+            relational_table_row = recipe_custom_ingredient.query.filter(
+                (recipe_custom_ingredient.recipe_custom_ingr == existing_custom_ingredient.id) &
+                (recipe_custom_ingredient.ingredient_recipe == recipe_id)).first()
+            if relational_table_row:
+                return 'ingredient_already_exists!'
+            else:
+                recipe.child_custom_ingredients.append(existing_custom_ingredient)
+                db.session.commit()
+                response = {'id': f'c{existing_custom_ingredient.id}', 'name' : existing_custom_ingredient.name}
+        else:
+            custom_ingredient = CustomIngredient(name=ingredient_name)
+            recipe.child_custom_ingredients.append(custom_ingredient)
+            db.session.commit()
+            response = {'id': f'c{existing_custom_ingredient.id}', 'name': custom_ingredient.name}
+        return jsonify(response)
     else:
         return 'failed to add ingredient'
 
 @app.route('/api/recipes/<int:recipe_id>/edit/updateIngredient', methods = ['POST'])
 def update_ingredient(recipe_id):
-    relational_table_row = recipe_custom_ingredient.query.filter(
-            (recipe_custom_ingredient.recipe_custom_ingr == request.json['id']) &
-              (recipe_custom_ingredient.ingredient_recipe == recipe_id)).first()
-    relational_table_row.quantity = request.json['quantity']
-    relational_table_row.measure = request.json['measure']
-    db.session.commit()
-    response = {'quantity': relational_table_row.quantity, 'measure': relational_table_row.measure}
+    if request.json['type'] == 'custom-ingredient':
+        relational_table_row = recipe_custom_ingredient.query.filter(
+                (recipe_custom_ingredient.recipe_custom_ingr == request.json['id']) &
+                (recipe_custom_ingredient.ingredient_recipe == recipe_id)).first()
+        relational_table_row.quantity = request.json['quantity']
+        relational_table_row.measure = request.json['measure']
+        db.session.commit()
+        responseId = f'c{request.json["id"]}'
+    elif request.json['type'] == 'standard-ingredient':
+        relational_table_row = recipe_ingredient.query.filter(
+            (recipe_ingredient.recipe_ingredient == request.json['id']) &
+            (recipe_ingredient.ingredient_recipe == recipe_id)).first()
+        relational_table_row.quantity = request.json['quantity']
+        relational_table_row.measure = request.json['measure']
+        db.session.commit()
+        responseId = f's{request.json["id"]}'
+    else:
+        return 'error, type not specified'
+    response = {'id': responseId, 'quantity': relational_table_row.quantity, 'measure': relational_table_row.measure}
     return jsonify(response)
     
 @app.route('/api/recipes/<int:recipe_id>/edit/delete', methods =['POST'])
 def delete_ingredient(recipe_id):
     recipe = Recipe.query.get_or_404(recipe_id)
     if request.json['ingredient_type'] == 'standard':
-        ingredient_name = request.json['ingredient_name']
-        ingredient = Ingredient.query.filter_by(name=ingredient_name).one()
+        ingredient_id = request.json['ingredient_id']
+        print(ingredient_id)
+        ingredient = Ingredient.query.get(ingredient_id)
         recipe.child_ingredients.remove(ingredient)
         db.session.commit()
         return 'success'
     elif request.json['ingredient_type'] == 'custom':
-        custom_ingredient_name = request.json['ingredient_name']
-        custom_ingredient = CustomIngredient.query.filter_by(name=custom_ingredient_name).one()
-        db.session.delete(custom_ingredient)
+        custom_ingredient_id = request.json['ingredient_id']
+        selected_custom_ingredient = CustomIngredient.query.get(custom_ingredient_id)
+        print(selected_custom_ingredient)
+        recipe.child_custom_ingredients.remove(selected_custom_ingredient)
         db.session.commit()
         return 'success'
     return 'failure'
