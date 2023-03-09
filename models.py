@@ -175,10 +175,11 @@ class recipe_ingredient(db.Model):
     __tablename__ = 'recipes_ingredients'
 
     recipe_ingredient = db.Column(
-        db.Integer, db.ForeignKey('ingredients.id', ondelete="SET NULL"), primary_key=True)
+        db.Integer, db.ForeignKey('ingredients.id', ondelete="cascade"), primary_key=True)
     ingredient_recipe = db.Column(
         db.Integer, db.ForeignKey('recipes.id', ondelete="cascade"), primary_key=True)
     quantity = db.Column(db.String, nullable = True)
+    measure = db.Column(db.String, nullable = True)
 
 class recipe_custom_ingredient(db.Model):
 
@@ -188,7 +189,7 @@ class recipe_custom_ingredient(db.Model):
                    primary_key=True,
                    autoincrement=True)
     recipe_custom_ingr = db.Column(
-        db.Integer, db.ForeignKey('custom_ingredients.id', ondelete="SET NULL"), nullable=False)
+        db.Integer, db.ForeignKey('custom_ingredients.id', ondelete="cascade"), nullable=False)
     ingredient_recipe = db.Column(
         db.Integer, db.ForeignKey('recipes.id', ondelete="cascade"), nullable=False)
     quantity = db.Column(db.String, nullable= True)
