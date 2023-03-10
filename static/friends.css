@@ -1,0 +1,29 @@
+#friends-list-container{
+    height: 40vh;
+}
+#all_users_container{
+    height:  50vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-auto-rows: 30%;
+    background-color: #efefef;
+    overflow-y: scroll;
+}
+#user-search{
+    grid-column-start: 1;
+    grid-column-end: 8;
+    grid-row-start: 1;
+    grid-row-end: 2;
+    display: flex;
+    justify-content: center;
+}
+#user-search form{
+    width: 50%;
+    text-align: center;
+}
+#user-search input{
+    width: 80%;
+}
+#user-search button{
+    width: 8%;
+}

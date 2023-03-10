@@ -10,6 +10,23 @@ def connect_db(app):
     db.init_app(app)
 
 
+class Follows(db.Model):
+    """Connection of a follower <-> followed_user."""
+
+    __tablename__ = 'follows'
+
+    user_being_followed_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        primary_key=True,
+    )
+
+    user_following_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        primary_key=True,
+    )
+
 class User(db.Model):
 
     __tablename__ = 'users'
@@ -22,6 +39,30 @@ class User(db.Model):
     full_name = db.Column(db.String(35), nullable=False)
     email = db.Column(db.String, nullable=False)
     profile_pic = db.Column(db.String, nullable=True)
+
+    followers = db.relationship(
+        "User",
+        secondary="follows",
+        primaryjoin=(Follows.user_being_followed_id == id),
+        secondaryjoin=(Follows.user_following_id == id)
+    )
+
+    following = db.relationship(
+        "User",
+        secondary="follows",
+        primaryjoin=(Follows.user_following_id == id),
+        secondaryjoin=(Follows.user_being_followed_id == id)
+    )
+
+    def is_followed_by(self, other_user):
+
+        found_user_list = [user for user in self.followers if user == other_user]
+        return len(found_user_list) == 1
+
+    def is_following(self, other_user):
+
+        found_user_list = [user for user in self.following if user == other_user]
+        return len(found_user_list) == 1
 
     @classmethod
     def signup(cls, username, email, full_name, password, profile_pic):
@@ -36,6 +77,7 @@ class User(db.Model):
                             password=hashed_password, profile_pic=profile_pic)
         
         db.session.add(created_user)
+        db.session.commit()
         return created_user
 
     @classmethod
@@ -81,19 +123,19 @@ class Recipe(db.Model):
                    autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
     rating = db.Column(db.Integer(), nullable=True)
+    url = db.Column(db.String, nullable = True)
+    source = db.Column(db.String, nullable = True)
     user_id = db.Column(db.Integer, db.ForeignKey(
         'users.id', ondelete='CASCADE'), nullable=False)
-
     user = db.relationship('User')
     cookbook_id = db.Column(db.Integer, db.ForeignKey('cookbooks.id', ondelete = "SET NULL"), nullable = True)
     cookbook = db.relationship(
         'Cookbook', backref='recipes')
-    
     child_ingredients = db.relationship('Ingredient', secondary = 'recipes_ingredients', backref='recipes')
     child_custom_ingredients = db.relationship('CustomIngredient', secondary = 'recipes_custom_ingredients', backref= 'recipe' )
     instructions = db.relationship('Instruction', backref='recipe')
     notes = db.relationship('Note', backref='recipe')
-
+    tags = db.relationship('Tag', secondary = 'recipes_tags', backref = 'attached_recipes')
     def serialize(self):
         return {
             "id": self.id,
@@ -102,7 +144,8 @@ class Recipe(db.Model):
             'user_id':self.user_id,
             'ingredients': [{'id':ingredient.id, 'name': ingredient.name, 'price': ingredient.price} for ingredient in self.child_ingredients],
             'custom_ingredients': [{'id': custom_ingredient.id, 'name': custom_ingredient.name} for custom_ingredient in self.custom_ingredients],
-            'instructions': [{'id': instruction.id, 'text': instruction.text} for instruction in self.instructions]
+            'instructions': [{'id': instruction.id, 'text': instruction.text} for instruction in self.instructions],
+            'url' : self.url
         }
 class Tag(db.Model):
 
@@ -111,6 +154,7 @@ class Tag(db.Model):
                    primary_key=True,
                    autoincrement=True)
     name = db.Column(db.String(30), nullable=False)
+    recipes = db.relationship('Recipe', secondary = 'recipes_tags', backref = 'attached_tags')
 
 class recipe_tag(db.Model):
 

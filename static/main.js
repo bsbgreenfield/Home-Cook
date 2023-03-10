@@ -209,9 +209,11 @@ const useEdamamRecipe = async function (e) {
     tinyJson = {
         'name': recipeData.label,
         'recipeUrl': recipeData.url,
+        'recipe_source': recipeData.source,
         'recipe_image': recipeData.image,
         'recipe_cuisine': recipeCuisine,
-        'ingredients': ingredients
+        'health_labels': recipeData.healthLabels,
+        'ingredients': ingredients,
     }
     response = await axios.post('/recipes/build/edamam', json = tinyJson)
     location.href = `http://127.0.0.1:5000${response.data}`

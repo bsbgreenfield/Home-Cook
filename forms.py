@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, TextAreaField, SelectField, FloatField
 from wtforms.validators import DataRequired, Email, Length, Optional
+from models import Tag
 
 class LoginForm(FlaskForm):
     """login form"""
@@ -32,10 +33,10 @@ class BuildSearchForm(FlaskForm):
     ingredient = StringField('Search', validators=[DataRequired()])
 
 class BuildTagForm(FlaskForm):
-    tag = StringField('Tag', validators = [DataRequired()])
+    tag = SelectField('Tag', validators = [DataRequired()])
 
 class BuildNotesForm(FlaskForm):
-    note = StringField('Add Note', validators=[DataRequired()])
+    note = StringField('Add Note', validators=[Optional()])
 
 class BuildInstructionsForm(FlaskForm):
     instruction = StringField('Add Instruction', validators=[DataRequired()])
@@ -43,6 +44,8 @@ class BuildInstructionsForm(FlaskForm):
 class RecipeQuickAdd(FlaskForm):
     recipe = SelectField()
 
+class FriendSearchForm(FlaskForm):
+    username = StringField('Search For a user', validators=[DataRequired()] )
 
 
     

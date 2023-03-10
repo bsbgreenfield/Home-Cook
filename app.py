@@ -3,8 +3,8 @@ from flask import request, render_template, redirect, flash, Flask, session, g, 
 import requests
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
-from models import db, connect_db, User, Cookbook, Recipe, Ingredient, Instruction, CustomIngredient, recipe_custom_ingredient, recipe_ingredient
-from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, BuildNotesForm, RecipeQuickAdd
+from models import db, connect_db, User, Cookbook, Recipe, Ingredient, Instruction, CustomIngredient, recipe_custom_ingredient, recipe_ingredient, Tag
+from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, BuildNotesForm, RecipeQuickAdd, FriendSearchForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -111,6 +111,12 @@ def user_landing_page(user_id):
         recipe_count += len(cookbook.recipes)
     return render_template('main.html', cookbooks=cookbooks, recipe_count=recipe_count)
 
+@app.route('/users/<int:user_id>/friends', methods = ['GET', 'POST'])
+def friends_view(user_id):
+    all_users = User.query.all()
+    form = FriendSearchForm()
+    return render_template('friends.html', all_users=all_users, form = form)
+
 @app.route('/recipes/build')
 def recipe_from_scratch():
     new_recipe = Recipe(name='New Recipe', cookbook_id = None, user_id=g.user.id)
@@ -122,13 +128,23 @@ def recipe_from_scratch():
 def recipe_from_edamam():
     name = request.json['name']
     recipe_url = request.json['recipeUrl']
+    recipe_source = request.json['recipe_source']
     recipe_cuisine = request.json['recipe_cuisine']
+    recipe_health_labels = request.json['health_labels']
     ingredients = request.json['ingredients']
-    new_recipe = Recipe(name=name, cookbook_id = None, user_id = g.user.id)
+    new_recipe = Recipe(name=name, cookbook_id = None, user_id = g.user.id, url = recipe_url, source = recipe_source)
     db.session.add(new_recipe)
     db.session.commit()
+    # add in tags to recipe
+    recipe_cuisine.extend(recipe_health_labels)
+    print(recipe_cuisine)
+    for tag in recipe_cuisine:
+        if tag:
+            new_tag =  Tag.query.filter_by(name=tag).first()
+        if new_tag and new_tag not in new_recipe.tags:
+            new_recipe.tags.append(new_tag)
+    db.session.commit()
     for ingredient in ingredients:
-        print(ingredient)
         new_custom = CustomIngredient(name=ingredient['food'])
         new_recipe.child_custom_ingredients.append(new_custom)
         db.session.commit()
@@ -144,14 +160,22 @@ def recipe_from_edamam():
     return f'/recipes/{new_recipe.id}/edit'
     
 
-@app.route('/recipes/<int:recipe_id>/edit', methods = ['GET'])
+@app.route('/recipes/<int:recipe_id>/edit', methods = ['GET', 'POST'])
 def view_and_edit_recipe(recipe_id):
     selected_recipe = Recipe.query.get(recipe_id)
     main_recipe_form = AddRecipeForm(name=selected_recipe.name, cookbook=selected_recipe.cookbook_id)
     main_recipe_form.cookbook.choices = [(cookbook.id, cookbook.name)
                              for cookbook in Cookbook.query.filter_by(user_id=g.user.id)]
     build_search_form = BuildSearchForm()
-    build_tag_form = BuildTagForm()
+    build_tag_form = BuildTagForm(tag=Tag.query.get(9999))
+    available_tags = [tag for tag in Tag.query.all()  if tag not in selected_recipe.tags]
+    build_tag_form.tag.choices = [(tag.id, tag.name) for tag in available_tags]
+    build_tag_form.tag.choices.insert(0, (9999,""))
+    if build_tag_form.validate_on_submit():
+        new_tag = Tag.query.filter_by(id=build_tag_form.tag.data).first()
+        if new_tag:
+            selected_recipe.tags.append(new_tag)
+            db.session.commit()
     build_notes_form = BuildNotesForm()
     return render_template('recipe.html', recipe=selected_recipe,
                             main_recipe_form=main_recipe_form,
