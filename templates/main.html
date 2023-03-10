@@ -26,7 +26,7 @@
                         {% for recipe in cookbook.recipes %}
                         <li class="main-recipe-selector">
                             <a href="/recipes/{{recipe.id}}/edit">{{recipe.name}}</a>
-                            <button data-recipe-id="{{recipe.id}}">Select >></button>
+                            <button data-recipe-id="{{recipe.id}}" class="recipe-popout">Select >> </button>
                         </li>
                         {% endfor %}
                         
@@ -68,7 +68,7 @@
                     <button>Go</button>
             </form>
         </div>
-        <div>
+        <div id="scratch-button-container">
             <form action="/recipes/build">
                 <button class="main-scratch-button">Start from scratch</button>
             </form>

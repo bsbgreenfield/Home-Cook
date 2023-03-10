@@ -6,27 +6,37 @@ const ingredientDisplay = document.querySelector('.build-ingredients-display-wra
 const custom_ingr_form = document.querySelector('#custom-ingredient-form')
 const customIngredientInput = document.querySelector('.custom-ingr-input')
 const curr_url = window.location.pathname
-function search(str) {
+function search(str, array) {
     let results = [];
-    results = (ingredients.filter(val => val.toLowerCase().includes(str)));
+    results = (array.filter(val => val.toLowerCase().includes(str)));
     return results;
 }
 
 function searchHandler(e) {
-    ingredientSuggestions.innerHTML = '';
-    let resultList = search(ingredientSearchBar.value.toLowerCase())
-    if (resultList.length > 0) {
-        ingredientSuggestions.style.display = 'grid'
-        custom_ingr_form.style.display = 'none'
-        showSuggestions(resultList)
+    if (e.currentTarget == ingredientSearchBar){
+        searchLogic('ingredient')
     }
-    else {
-        ingredientSuggestions.style.display = 'none'
-        custom_ingr_form.style.display = 'block'
-        customIngredientInput.value = ingredientSearchBar.value
+   
+}
+function searchLogic(searchType){
+    if (searchType =='ingredient'){
+        ingredientSuggestions.innerHTML = '';
+        let resultList = search(ingredientSearchBar.value.toLowerCase(), ingredients)
+        if (resultList.length > 0) {
+            ingredientSuggestions.style.display = 'grid'
+            custom_ingr_form.style.display = 'none'
+            showSuggestions(resultList)
+        }
+        else {
+            ingredientSuggestions.style.display = 'none'
+            custom_ingr_form.style.display = 'block'
+            customIngredientInput.value = ingredientSearchBar.value
+        }
+    }
+    else if (searchType == 'tag'){
+        ///something else
     }
 }
-
 function showSuggestions(results) {
     for (i = 0; i <= 5; i++) {
         if (results[i] != undefined && ingredientSearchBar.value != '') {

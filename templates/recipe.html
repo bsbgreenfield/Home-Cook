@@ -16,8 +16,16 @@ New Recipe
           <span class="main-input">{{ field(placeholder=field.label.text) }}</span>
         {% endfor %}
     </form>
+    <div class="recipe-tags">
+      {% for tag in recipe.tags %}
+      <div class="tag">
+        {{tag.name}}
+      </div>
+      {% endfor %}
+    </div>
     <div class="recipe-build build-tag ">
-      <form method="POST" id="build-tag-form" autocomplete="off">
+      <div class="new-tag-form">
+        <form method="POST" id="build-tag-form" autocomplete="off">
           {{ build_tag_form.hidden_tag() }}
       
           {% for field in build_tag_form if field.widget.input_type != 'hidden' %}
@@ -26,7 +34,9 @@ New Recipe
             {% endfor %}
             <span>{{ field(placeholder=field.label.text) }}</span>
           {% endfor %}
-      </form>
+          <button>add tag</button>
+        </form>
+      </div>
   </div>
     </div>
   </div>
