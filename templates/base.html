@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="/static/profile.css">
     <link rel="stylesheet" href="/static/cookbook.css">
     <link rel="stylesheet" href="/static/friends.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Signika+Negative:wght@300;500&display=swap" rel="stylesheet">    
 </head>
 <body>
     <nav id="navbar">
@@ -18,7 +21,7 @@
         <span><a href="/users/{{g.user.id}}/profile">Profile</a></span>
         {% if session['curr_user'] == g.user.id%}
         <form action="/logout" method=POST style="display:inline-block">
-            <button class="link-button">logout</button>
+            <button class="link-button">Logout</button>
         </form>
 
         {% else %}
@@ -30,7 +33,7 @@
     </nav>
     {% block content %} 
     {% endblock %}
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/static/main.js"></script>
     <script src="/static/recipe_build.js"></script>
     <script src="/static/profile.js"></script>

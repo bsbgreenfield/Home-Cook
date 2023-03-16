@@ -38,7 +38,7 @@ class User(db.Model):
     password = db.Column(db.Text, nullable=False, unique=True)
     full_name = db.Column(db.String(35), nullable=False)
     email = db.Column(db.String, nullable=False)
-    profile_pic = db.Column(db.String, nullable=True)
+    profile_pic = db.Column(db.String, nullable=True, default= "/static/images/user-default.jpg")
 
     followers = db.relationship(
         "User",

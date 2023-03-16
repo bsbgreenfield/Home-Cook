@@ -4,7 +4,7 @@ import requests
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from models import db, connect_db, User, Cookbook, Recipe, Ingredient, Instruction, CustomIngredient, recipe_custom_ingredient, recipe_ingredient, Tag
-from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, BuildNotesForm, RecipeQuickAdd, FriendSearchForm
+from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, RecipeQuickAdd, FriendSearchForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -87,7 +87,7 @@ def signup():
                 password=form.password.data,
                 email=form.email.data,
                 full_name=form.full_name.data,
-                profile_pic=form.profile_pic.data
+                profile_pic=form.profile_pic.data or None
             )
             db.session.commit()
 
@@ -113,13 +113,19 @@ def user_landing_page(user_id):
 
 @app.route('/users/<int:user_id>/friends', methods = ['GET', 'POST'])
 def friends_view(user_id):
-    all_users = User.query.all()
     form = FriendSearchForm()
-    return render_template('friends.html', all_users=all_users, form = form)
+    if form.validate_on_submit():
+        username_search_input = form.username.data
+        user_results = User.query.filter(User.username.ilike(f'%{username_search_input}%')).all()
+        if len(user_results) > 0:
+            return render_template('friends.html', user_results = user_results, form=form)
+        else:
+            return render_template('friends.html', user_results = 'DNE', form=form)
+    return render_template('friends.html', form = form, user_results = None)
 
 @app.route('/recipes/build')
 def recipe_from_scratch():
-    new_recipe = Recipe(name='New Recipe', cookbook_id = None, user_id=g.user.id)
+    new_recipe = Recipe(name='', cookbook_id = None, user_id=g.user.id)
     db.session.add(new_recipe)
     db.session.commit()     # figure out a way to not have to commit if recipe is cancelled?
     return redirect(f'/recipes/{new_recipe.id}/edit')
@@ -176,12 +182,10 @@ def view_and_edit_recipe(recipe_id):
         if new_tag:
             selected_recipe.tags.append(new_tag)
             db.session.commit()
-    build_notes_form = BuildNotesForm()
     return render_template('recipe.html', recipe=selected_recipe,
                             main_recipe_form=main_recipe_form,
                               build_search_form=build_search_form,
-                                build_tag_form=build_tag_form,
-                                  build_notes_form=build_notes_form)
+                                build_tag_form=build_tag_form)
 
 
 
@@ -266,7 +270,7 @@ def add_ingredient_to_recipe(recipe_id, ingredient_name):
             custom_ingredient = CustomIngredient(name=ingredient_name)
             recipe.child_custom_ingredients.append(custom_ingredient)
             db.session.commit()
-            response = {'id': f'c{existing_custom_ingredient.id}', 'name': custom_ingredient.name}
+            response = {'id': f'c{custom_ingredient.id}', 'name': custom_ingredient.name}
         return jsonify(response)
     else:
         return 'failed to add ingredient'
@@ -343,6 +347,15 @@ def save_instructions(recipe_id):
             selected_recipe.instructions.append(new_instruction)
     db.session.commit()
     return 'success'
+
+@app.route('/api/users/<int:curr_user_id>/friends/add/<int:new_follower_id>', methods = ['POST'])
+def add_friend(curr_user_id, new_follower_id):
+    if g.user.id == curr_user_id:
+        curr_user = User.query.get(curr_user_id)
+        user_to_follow = User.query.get(new_follower_id)
+        curr_user.following.append(user_to_follow)
+        db.session.commit()
+        return redirect(f'/users/{curr_user_id}/friends')
 #*******************************************************************************
 #KrogerApi
 

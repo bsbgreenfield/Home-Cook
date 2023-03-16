@@ -30,7 +30,7 @@ for (let cookbook of selectableCookbooks) {
 */
 //event listener to get recipe info 
 const popOutRecipe = async function recipePopper(e) {
-    if (e.target.tagName === 'BUTTON') {
+    if (e.target.className === 'main-recipe-selector') {
         e.preventDefault();
 
         //clear out all other results
@@ -83,15 +83,17 @@ const searchKeyword = async function edamamSearch(e) {
     edamamSuggestionsArea.id = 'edamam-suggestions-disp'
     edamamSuggestionsArea.style.display = 'none'
 
-    // append first five results to the grid
+    // append first seven results to the grid
 
-    for (i = 0; i < 6; i++) {
+    for (i = 0; i < 19; i++) {
         hits.push(response.data.hits[i])
     }
     const completedRecipeCards = extractEdamamData(hits) // returns an array of cards
     for (card of completedRecipeCards) {
         edamamSuggestionsArea.appendChild(card)
     }
+
+
     mainRecipeAreaWrapper.appendChild(edamamSuggestionsArea)
 
     loader.style.display = 'none'
@@ -99,6 +101,7 @@ const searchKeyword = async function edamamSearch(e) {
 
 
 }
+
 
 if (keywordSearchForm) {
     keywordSearchForm.addEventListener('submit', searchKeyword)
@@ -253,8 +256,13 @@ async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngre
      // recipe header
      let recipeName = document.createElement('h2')
      recipeName.innerText = response.data.recipe.name
+     let editLink = document.createElement('a')
+     editLink.href = `/recipes/${response.data.recipe.id}/edit`
+     editLink.innerText = 'edit'
+     editLink.className = 'edit-recipe-link'
+     pageRecipeHeader.appendChild(editLink)
      pageRecipeHeader.appendChild(recipeName)
-
+    
      //recipe ingredients
      console.log(response.data.recipe)
      let recipeIngredientlist = response.data.recipe.ingredients
@@ -286,7 +294,7 @@ async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngre
 
      //recipe instructions
      let recipeInstructionList = response.data.recipe.instructions
-     let instructionUl = document.createElement('ul')
+     let instructionUl = document.createElement('ol')
      for (let instruction of recipeInstructionList) {
          let newInstruction = document.createElement('li')
          newInstruction.innerText = instruction.text

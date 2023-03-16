@@ -12,4 +12,4 @@ for num in range(100):
     choice2 = choice(names)
     User.signup(username = f'{choice1}{choice2}', password = choice(names),
                  full_name =  f'{choice1} {choice2}', email = f'{choice1}.{choice2}@gmail.com', 
-                 profile_pic= '/static/user-default.jpg')
+                 profile_pic= None)

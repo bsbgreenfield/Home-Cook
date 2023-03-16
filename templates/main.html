@@ -24,9 +24,8 @@
                     <ul class="cookbook-recipes">
                         {% if cookbook.recipes %}
                         {% for recipe in cookbook.recipes %}
-                        <li class="main-recipe-selector">
-                            <a href="/recipes/{{recipe.id}}/edit">{{recipe.name}}</a>
-                            <button data-recipe-id="{{recipe.id}}" class="recipe-popout">Select >> </button>
+                        <li class="main-recipe-selector" data-recipe-id="{{recipe.id}}">
+                            {{recipe.name}}
                         </li>
                         {% endfor %}
                         
@@ -44,7 +43,7 @@
     </div>
     <div id="user-banner-grid">
         <div class="profile-pic-wrapper">
-            <img src="/static/user-default.jpg" alt="">
+            <img src='{{g.user.profile_pic}}' alt="">
         </div>
         <div class="profile-banner-info">
             <h5>Username: {{g.user.username}}</h6>
@@ -83,7 +82,7 @@
     
             </div>
             <div class="recipe-disp-instructions">
-    
+                <h2>instructions</h2>
             </div>
         </div>
         <div id="loading-wheel-wrapper">
@@ -93,7 +92,7 @@
         </div>
         <div id="recipe-disp-placeholder">
             <p>
-                Select a recipe or search for what you want to eat!
+                Select a recipe or search for what you want to eat
             </p>
             
         </div>
