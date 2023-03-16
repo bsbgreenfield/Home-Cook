@@ -4,7 +4,6 @@ New Recipe
 {% endblock %}
 {% block content %}
 <div class="recipe-build build-main">
-  <div>
     <div class="build-form-wrapper">
       <form id="build-recipe-form" method="POST" action="/api/recipes/{{recipe.id}}/edit/save">
         {{ main_recipe_form.hidden_tag() }}
@@ -13,7 +12,7 @@ New Recipe
           {% for error in field.errors %}
             <span>{{ error }}</span>
           {% endfor %}
-          <span class="main-input">{{ field(placeholder=field.label.text) }}</span>
+          <span>{{ field(placeholder=field.label.text, autocomplete= 'off') }}</span>
         {% endfor %}
     </form>
     <div class="recipe-tags">
@@ -29,17 +28,13 @@ New Recipe
           {{ build_tag_form.hidden_tag() }}
       
           {% for field in build_tag_form if field.widget.input_type != 'hidden' %}
-            {% for error in field.errors %}
-              <span>{{ error }}</span>
-            {% endfor %}
-            <span>{{ field(placeholder=field.label.text) }}</span>
+            <span>{{ field(placeholder=field.label.text)}}</span>
           {% endfor %}
-          <button>add tag</button>
+          <button class="tag-button">add tag</button>
         </form>
       </div>
   </div>
     </div>
-  </div>
  
     <div id="recipe-build-grid-wrapper">
         <div class="recipe-build build-ingredient-searchbar">
@@ -65,25 +60,13 @@ New Recipe
               <div>
                 <button type="submit" form="build-custom-ingredient-form">Submit</button>
               </div>
-              
           </form>
           </div>
         </div>
         <div class="build-ingredients-display-wrapper">
 
         </div>
-        <div class="recipe-build build-notes bottom-tab">
-            <form method="POST" id="build-notes-form" autocomplete="off">
-                {{ build_notes_form.hidden_tag() }}
-            
-                {% for field in build_notes_form if field.widget.input_type != 'hidden' %}
-                  {% for error in field.errors %}
-                    <span>{{ error }}</span>
-                  {% endfor %}
-                  <span>{{ field(placeholder=field.label.text) }}</span>
-                {% endfor %}
-            </form>
-        </div>
+        
         <div class="recipe-build build-instructions">
           <h2>instructions</h2>
             <div id='build-instructions-container'>

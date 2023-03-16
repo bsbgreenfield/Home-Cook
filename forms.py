@@ -26,8 +26,8 @@ class AddCookbookForm(FlaskForm):
 class AddRecipeForm(FlaskForm):
     """Add a new recipe"""
 
-    name = StringField('Name', validators = [DataRequired()])
-    cookbook = SelectField('Add to a Cookbook',  validators=[Optional()] )
+    name = StringField('"New Recipe"', validators = [DataRequired()])
+    cookbook = SelectField('Add to a Cookbook',  validators=[DataRequired()] )
 
 class BuildSearchForm(FlaskForm):
     ingredient = StringField('Search', validators=[DataRequired()])

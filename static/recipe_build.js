@@ -5,7 +5,7 @@ const ingredientSuggestions = document.querySelector('#recipe-build-search')
 const ingredientDisplay = document.querySelector('.build-ingredients-display-wrapper')
 const custom_ingr_form = document.querySelector('#custom-ingredient-form')
 const customIngredientInput = document.querySelector('.custom-ingr-input')
-const curr_url = window.location.pathname
+let curr_url = window.location.pathname
 function search(str, array) {
     let results = [];
     results = (array.filter(val => val.toLowerCase().includes(str)));
@@ -13,13 +13,13 @@ function search(str, array) {
 }
 
 function searchHandler(e) {
-    if (e.currentTarget == ingredientSearchBar){
+    if (e.currentTarget == ingredientSearchBar) {
         searchLogic('ingredient')
     }
-   
+
 }
-function searchLogic(searchType){
-    if (searchType =='ingredient'){
+function searchLogic(searchType) {
+    if (searchType == 'ingredient') {
         ingredientSuggestions.innerHTML = '';
         let resultList = search(ingredientSearchBar.value.toLowerCase(), ingredients)
         if (resultList.length > 0) {
@@ -33,7 +33,7 @@ function searchLogic(searchType){
             customIngredientInput.value = ingredientSearchBar.value
         }
     }
-    else if (searchType == 'tag'){
+    else if (searchType == 'tag') {
         ///something else
     }
 }
@@ -66,7 +66,12 @@ function rebuildRecipeMarkupOnLoad(secondaryClass, ingredient, ingredientData) {
     let newIngredient = document.createElement('div')
     newIngredient.classList.add('added-ingredient')
     newIngredient.classList.add(secondaryClass)
-    newIngredient.setAttribute('data-ingredient-id', ingredient.id)
+    if (secondaryClass == 'standard-ingredient') {
+        newIngredient.setAttribute('data-ingredient-id', `s${ingredient.id}`)
+    }
+    else if (secondaryClass == 'custom-ingredient') {
+        newIngredient.setAttribute('data-ingredient-id', `c${ingredient.id}`)
+    }
     newIngredient.innerText = ingredient.name
 
     let delete_ingedrient_btn = document.createElement('div')
@@ -85,19 +90,19 @@ function rebuildRecipeMarkupOnLoad(secondaryClass, ingredient, ingredientData) {
     let quantityInput = document.createElement('input')
     let measureInput = document.createElement('input')
     quantityInput.className = 'ingredient-quantity', measureInput.className = 'ingredient-measure';
-    if (ingredientData[0] != null){
+    if (ingredientData[0] != null) {
         quantityInput.value = `${ingredientData[0]}`
     }
-    else{
+    else {
         quantityInput.value = '-'
     }
-    if (ingredientData[1] != null){
+    if (ingredientData[1] != null) {
         measureInput.value = `${ingredientData[1]}`;
     }
-   else {
-    measureInput.value = '-'
-   }
-    quantityInput.readOnly = true, measureInput.readOnly=true;
+    else {
+        measureInput.value = '-'
+    }
+    quantityInput.readOnly = true, measureInput.readOnly = true;
     inputContainer.appendChild(quantityInput), inputContainer.appendChild(measureInput)
 
     let saveQuantityButton = document.createElement('button')
@@ -117,13 +122,13 @@ const editIngredientQuantity = function (e) {
     if (e.target.tagName == 'BUTTON') {
         e.target.innerText = 'save';
         let measure = e.target.previousSibling
-        let quantity =  e.target.previousSibling.previousSibling
+        let quantity = e.target.previousSibling.previousSibling
         measure.style.backgroundColor = '#efefef', quantity.style.backgroundColor = '#efefef'
         measure.readOnly = false, quantity.readOnly = false
         e.currentTarget.removeEventListener('click', editIngredientQuantity)
         e.currentTarget.addEventListener('click', saveIngredientQuantity)
     }
-    else if (e.target.tagName == 'svg' || e.target.tagName == 'path'){
+    else if (e.target.tagName == 'svg' || e.target.tagName == 'path') {
         let ingredient_id = e.currentTarget.getAttribute('data-ingredient-id')
         console.log(ingredient_id)
         if (e.currentTarget.classList.contains('standard-ingredient')) {
@@ -137,12 +142,12 @@ const editIngredientQuantity = function (e) {
     }
 }
 
-const saveIngredientQuantity = async function(e) {
+const saveIngredientQuantity = async function (e) {
     e.preventDefault()
     if (e.target.tagName == 'BUTTON') {
         e.target.innerText = 'edit';
         let measure = e.target.previousSibling
-        let quantity =  e.target.previousSibling.previousSibling
+        let quantity = e.target.previousSibling.previousSibling
         measure.style.backgroundColor = 'transparent', quantity.style.backgroundColor = 'transparent'
         measure.readOnly = true, quantity.readOnly = true
         let ingredientId = e.currentTarget.getAttribute('data-ingredient-id')
@@ -162,7 +167,7 @@ const saveIngredientQuantity = async function(e) {
             "measure": newMeasure,
         }
         let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/updateIngredient`,
-                                         json = data)
+            json = data)
         quantity.value = `${response.data.quantity}`
         measure.value = `${response.data.measure}`
         let selectedIngredient = document.querySelector(`[data-ingredient-id = "${response.data.id}"]`)
@@ -209,10 +214,10 @@ const delete_ingredient = async function delete_ingredient(e) {
 }
 
 async function delete_ingredient_logic(ingredient_id, ingrType) {
-    let id = parseInt(ingredient_id)
-    let body = { 'ingredient_type': `${ingrType}`, 'ingredient_id': id}
+    let id = parseInt(ingredient_id.substring(1))
+    let body = { 'ingredient_type': `${ingrType}`, 'ingredient_id': id }
     let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/delete`, json = body)
-    
+
 }
 
 
@@ -235,7 +240,7 @@ async function generateIngredientMarkup(ingredientInputValue, ingrType) {
     newIngredient.classList.add('added-ingredient')
     newIngredient.classList.add(ingrType)
     newIngredient.innerText = ingredientName
-    
+
 
     // delete button
     let delete_ingedrient_btn = document.createElement('div')
@@ -248,11 +253,11 @@ async function generateIngredientMarkup(ingredientInputValue, ingrType) {
     quantityForm.className = 'ingredient-quantity-container'
 
     let quantityInput = document.createElement('input')
-    quantityInput.placeholder = '#'
+    quantityInput.placeholder = '-'
     let measureInput = document.createElement('input')
-    measureInput.placeholder = '"#"'
-    quantityInput.className = 'ingredient-quantity'
-    measureInput.className = 'ingredient-measure'
+    measureInput.placeholder = '-'
+    quantityInput.className = 'ingredient-quantity', measureInput.className = 'ingredient-measure';
+    quantityInput.readOnly = true, measureInput.readOnly = true;
     quantityForm.appendChild(quantityInput), quantityForm.appendChild(measureInput)
     let saveQuantityButton = document.createElement('button')
     saveQuantityButton.innerText = 'add an amount'
