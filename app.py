@@ -4,7 +4,7 @@ import requests
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from models import db, connect_db, User, Cookbook, Recipe, Ingredient, Instruction, CustomIngredient, recipe_custom_ingredient, recipe_ingredient, Tag
-from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, RecipeQuickAdd, FriendSearchForm
+from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, RecipeQuickAdd, FriendSearchForm, ChangeInfoForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -105,32 +105,58 @@ def signup():
 @app.route('/users/<int:user_id>')
 def user_landing_page(user_id):
     selected_user = User.query.get(user_id)
-    recipe_count=0
+    recipe_count = 0
     cookbooks = selected_user.cookbooks
     for cookbook in cookbooks:
         recipe_count += len(cookbook.recipes)
     return render_template('main.html', cookbooks=cookbooks, recipe_count=recipe_count)
 
-@app.route('/users/<int:user_id>/friends', methods = ['GET', 'POST'])
+@app.route('/users/<int:user_id>/edit', methods = ['GET', 'POST'])
+def edit_user_profile(user_id):
+    if user_id == g.user.id:
+        form = ChangeInfoForm(obj=g.user)
+        if form.validate_on_submit():
+            user = User.authenticate(form.username.data, form.password.data)
+            if user:
+                if form.new_username.data:
+                    user.username = form.new_username.data
+                # if user chose a new password, encrypt it and set it as their new password
+                if form.new_password.data:
+                    user.password = User.encrypt_new_password(form.new_password.data)
+                user.full_name = form.full_name.data
+                user.email = form.email.data
+                user.profile_pic = form.profile_pic.data
+                db.session.commit()
+                return redirect('/')
+            else:
+                flash('Incorrect username or password')
+
+        return render_template('edit_profile.html', user = g.user, form=form)
+    else:
+        return redirect(f'/users/{g.user.id}/profile')
+@app.route('/users/<int:user_id>/friends', methods=['GET', 'POST'])
 def friends_view(user_id):
     form = FriendSearchForm()
     if form.validate_on_submit():
         username_search_input = form.username.data
-        user_results = User.query.filter(User.username.ilike(f'%{username_search_input}%')).all()
+        user_results = User.query.filter(
+            User.username.ilike(f'%{username_search_input}%')).all()
         if len(user_results) > 0:
-            return render_template('friends.html', user_results = user_results, form=form)
+            return render_template('friends.html', user_results=user_results, form=form)
         else:
-            return render_template('friends.html', user_results = 'DNE', form=form)
-    return render_template('friends.html', form = form, user_results = None)
+            return render_template('friends.html', user_results='DNE', form=form)
+    return render_template('friends.html', form=form, user_results=None)
+
 
 @app.route('/recipes/build')
 def recipe_from_scratch():
-    new_recipe = Recipe(name='', cookbook_id = None, user_id=g.user.id)
+    new_recipe = Recipe(name='', cookbook_id=None, user_id=g.user.id)
     db.session.add(new_recipe)
     db.session.commit()     # figure out a way to not have to commit if recipe is cancelled?
     return redirect(f'/recipes/{new_recipe.id}/edit')
 
-@app.route('/recipes/build/edamam', methods= ['POST'])
+
+@app.route('/recipes/build/edamam', methods=['POST'])
 def recipe_from_edamam():
     name = request.json['name']
     recipe_url = request.json['recipeUrl']
@@ -138,7 +164,8 @@ def recipe_from_edamam():
     recipe_cuisine = request.json['recipe_cuisine']
     recipe_health_labels = request.json['health_labels']
     ingredients = request.json['ingredients']
-    new_recipe = Recipe(name=name, cookbook_id = None, user_id = g.user.id, url = recipe_url, source = recipe_source)
+    new_recipe = Recipe(name=name, cookbook_id=None,
+                        user_id=g.user.id, url=recipe_url, source=recipe_source)
     db.session.add(new_recipe)
     db.session.commit()
     # add in tags to recipe
@@ -146,7 +173,7 @@ def recipe_from_edamam():
     print(recipe_cuisine)
     for tag in recipe_cuisine:
         if tag:
-            new_tag =  Tag.query.filter_by(name=tag).first()
+            new_tag = Tag.query.filter_by(name=tag).first()
         if new_tag and new_tag not in new_recipe.tags:
             new_recipe.tags.append(new_tag)
     db.session.commit()
@@ -158,42 +185,43 @@ def recipe_from_edamam():
         # add in associated quantity and measure
         relational_table_row = recipe_custom_ingredient.query.filter(
             (recipe_custom_ingredient.recipe_custom_ingr == new_custom.id) &
-              (recipe_custom_ingredient.ingredient_recipe == new_recipe.id)).first()
+            (recipe_custom_ingredient.ingredient_recipe == new_recipe.id)).first()
         relational_table_row.quantity = ingredient.get('quantity', None)
         relational_table_row.measure = ingredient.get('measure', None)
         db.session.add(relational_table_row)
         db.session.commit()
     return f'/recipes/{new_recipe.id}/edit'
-    
 
-@app.route('/recipes/<int:recipe_id>/edit', methods = ['GET', 'POST'])
+
+@app.route('/recipes/<int:recipe_id>/edit', methods=['GET', 'POST'])
 def view_and_edit_recipe(recipe_id):
     selected_recipe = Recipe.query.get(recipe_id)
-    main_recipe_form = AddRecipeForm(name=selected_recipe.name, cookbook=selected_recipe.cookbook_id)
+    main_recipe_form = AddRecipeForm(
+        name=selected_recipe.name, cookbook=selected_recipe.cookbook_id)
     main_recipe_form.cookbook.choices = [(cookbook.id, cookbook.name)
-                             for cookbook in Cookbook.query.filter_by(user_id=g.user.id)]
+                                         for cookbook in Cookbook.query.filter_by(user_id=g.user.id)]
     build_search_form = BuildSearchForm()
-    build_tag_form = BuildTagForm(tag=Tag.query.get(9999))
-    available_tags = [tag for tag in Tag.query.all()  if tag not in selected_recipe.tags]
+    build_tag_form = BuildTagForm()
+    available_tags = [tag for tag in Tag.query.all(
+    ) if tag not in selected_recipe.tags]
     build_tag_form.tag.choices = [(tag.id, tag.name) for tag in available_tags]
-    build_tag_form.tag.choices.insert(0, (9999,""))
     if build_tag_form.validate_on_submit():
         new_tag = Tag.query.filter_by(id=build_tag_form.tag.data).first()
         if new_tag:
             selected_recipe.tags.append(new_tag)
+            print(new_tag)
             db.session.commit()
     return render_template('recipe.html', recipe=selected_recipe,
-                            main_recipe_form=main_recipe_form,
-                              build_search_form=build_search_form,
-                                build_tag_form=build_tag_form)
-
+                           main_recipe_form=main_recipe_form,
+                           build_search_form=build_search_form,
+                           build_tag_form=build_tag_form)
 
 
 @app.route('/users/<int:user_id>/cookbooks/<int:cookbook_id>/add_recipe', methods=['POST'])
 def add_new_recipe(user_id, cookbook_id):
     form = RecipeQuickAdd()
     form.recipe.choices = [(recipe.id, recipe.name)
-                             for recipe in Recipe.query.all()]
+                           for recipe in Recipe.query.all()]
     if form.validate_on_submit():
         recipe_to_add = Recipe.query.get(form.recipe.data)
         recipe_to_add.cookbook_id = cookbook_id
@@ -215,10 +243,12 @@ def add_new_cookbook(user_id):
         return redirect(f'/users/{user_id}')
     return render_template('add_cookbook.html', form=form)
 
+
 @app.route('/users/<int:user_id>/profile')
 def profile_view(user_id):
     selected_user = User.query.get(user_id)
     return render_template('profile.html', user=selected_user)
+
 
 @app.route('/cookbooks/<int:cookbook_id>')
 def view_cookbook(cookbook_id):
@@ -226,7 +256,8 @@ def view_cookbook(cookbook_id):
     return render_template('cookbook.html', cookbook=selected_cookbook)
 
 
-#******************************************************************************
+
+# ******************************************************************************
 # API routes
 
 @app.route('/api/recipes/<int:recipe_id>/edit/info')
@@ -234,13 +265,17 @@ def send_recipe_data(recipe_id):
     selected_recipe = Recipe.query.get(recipe_id)
     return jsonify(recipe=selected_recipe.serialize())
 
+
 @app.route('/api/recipes/<int:recipe_id>/edit/ingredient_info')
 def send_ingredient_data(recipe_id):
-    recipe_custom_rows = {f'c{row.recipe_custom_ingr}': (row.quantity, row.measure) for row in recipe_custom_ingredient.query.filter_by(ingredient_recipe=recipe_id).all()}
-    recipe_standard_rows = {f's{row.recipe_ingredient}': (row.quantity, row.measure) for row in recipe_ingredient.query.filter_by(ingredient_recipe=recipe_id).all()}
-    return jsonify(customData = recipe_custom_rows, standardData = recipe_standard_rows)
+    recipe_custom_rows = {f'c{row.recipe_custom_ingr}': (
+        row.quantity, row.measure) for row in recipe_custom_ingredient.query.filter_by(ingredient_recipe=recipe_id).all()}
+    recipe_standard_rows = {f's{row.recipe_ingredient}': (
+        row.quantity, row.measure) for row in recipe_ingredient.query.filter_by(ingredient_recipe=recipe_id).all()}
+    return jsonify(customData=recipe_custom_rows, standardData=recipe_standard_rows)
 
-@app.route('/api/recipes/<int:recipe_id>/edit/<string:ingredient_name>/add', methods = ['POST'])
+
+@app.route('/api/recipes/<int:recipe_id>/edit/<string:ingredient_name>/add', methods=['POST'])
 def add_ingredient_to_recipe(recipe_id, ingredient_name):
     recipe = Recipe.query.get_or_404(recipe_id)
     # check ingredientType
@@ -254,7 +289,8 @@ def add_ingredient_to_recipe(recipe_id, ingredient_name):
         return 'not ingredient'
     elif request.json['ingredient_type'] == 'custom-ingredient':
         # check if custom ingredient already exists
-        existing_custom_ingredient = CustomIngredient.query.filter_by(name=ingredient_name).first()
+        existing_custom_ingredient = CustomIngredient.query.filter_by(
+            name=ingredient_name).first()
         if existing_custom_ingredient:
             # if it already exists, check if it already exists in this recipe
             relational_table_row = recipe_custom_ingredient.query.filter(
@@ -263,24 +299,28 @@ def add_ingredient_to_recipe(recipe_id, ingredient_name):
             if relational_table_row:
                 return 'ingredient_already_exists!'
             else:
-                recipe.child_custom_ingredients.append(existing_custom_ingredient)
+                recipe.child_custom_ingredients.append(
+                    existing_custom_ingredient)
                 db.session.commit()
-                response = {'id': f'c{existing_custom_ingredient.id}', 'name' : existing_custom_ingredient.name}
+                response = {'id': f'c{existing_custom_ingredient.id}',
+                            'name': existing_custom_ingredient.name}
         else:
             custom_ingredient = CustomIngredient(name=ingredient_name)
             recipe.child_custom_ingredients.append(custom_ingredient)
             db.session.commit()
-            response = {'id': f'c{custom_ingredient.id}', 'name': custom_ingredient.name}
+            response = {'id': f'c{custom_ingredient.id}',
+                        'name': custom_ingredient.name}
         return jsonify(response)
     else:
         return 'failed to add ingredient'
 
-@app.route('/api/recipes/<int:recipe_id>/edit/updateIngredient', methods = ['POST'])
+
+@app.route('/api/recipes/<int:recipe_id>/edit/updateIngredient', methods=['POST'])
 def update_ingredient(recipe_id):
     if request.json['type'] == 'custom-ingredient':
         relational_table_row = recipe_custom_ingredient.query.filter(
-                (recipe_custom_ingredient.recipe_custom_ingr == request.json['id']) &
-                (recipe_custom_ingredient.ingredient_recipe == recipe_id)).first()
+            (recipe_custom_ingredient.recipe_custom_ingr == request.json['id']) &
+            (recipe_custom_ingredient.ingredient_recipe == recipe_id)).first()
         relational_table_row.quantity = request.json['quantity']
         relational_table_row.measure = request.json['measure']
         db.session.commit()
@@ -295,10 +335,12 @@ def update_ingredient(recipe_id):
         responseId = f's{request.json["id"]}'
     else:
         return 'error, type not specified'
-    response = {'id': responseId, 'quantity': relational_table_row.quantity, 'measure': relational_table_row.measure}
+    response = {'id': responseId, 'quantity': relational_table_row.quantity,
+                'measure': relational_table_row.measure}
     return jsonify(response)
-    
-@app.route('/api/recipes/<int:recipe_id>/edit/delete', methods =['POST'])
+
+
+@app.route('/api/recipes/<int:recipe_id>/edit/delete_ingredient', methods=['POST'])
 def delete_ingredient(recipe_id):
     recipe = Recipe.query.get_or_404(recipe_id)
     if request.json['ingredient_type'] == 'standard':
@@ -310,18 +352,32 @@ def delete_ingredient(recipe_id):
         return 'success'
     elif request.json['ingredient_type'] == 'custom':
         custom_ingredient_id = request.json['ingredient_id']
-        selected_custom_ingredient = CustomIngredient.query.get(custom_ingredient_id)
+        selected_custom_ingredient = CustomIngredient.query.get(
+            custom_ingredient_id)
         print(selected_custom_ingredient)
         recipe.child_custom_ingredients.remove(selected_custom_ingredient)
         db.session.commit()
         return 'success'
     return 'failure'
 
-@app.route('/api/recipes/<int:recipe_id>/edit/save', methods = ['POST'])
+
+@app.route('/api/recipes/<int:recipe_id>/edit/delete_tag', methods=['POST'])
+def delete_tag(recipe_id):
+    selected_recipe = Recipe.query.get(recipe_id)
+    tag_goner = Tag.query.get(request.json['tag_id'])
+    selected_recipe.tags.remove(tag_goner)
+    db.session.commit()
+    if tag_goner not in selected_recipe.tags:
+        return 'success'
+    else:
+        return 'failure'
+
+
+@app.route('/api/recipes/<int:recipe_id>/edit/save', methods=['POST'])
 def save_recipe(recipe_id):
     main_recipe_form = AddRecipeForm()
     main_recipe_form.cookbook.choices = [(cookbook.id, cookbook.name)
-                             for cookbook in Cookbook.query.filter_by(user_id=g.user.id)]
+                                         for cookbook in Cookbook.query.filter_by(user_id=g.user.id)]
     selected_recipe = Recipe.query.get(recipe_id)
     # save recipe name and cookbook data, redirect to user form
     # The ingredients data is saved as they are added, and so do  not need to be saved here
@@ -335,20 +391,27 @@ def save_recipe(recipe_id):
         return redirect(f'/users/{g.user.id}')
     return render_template('recipe.html')
 
-@app.route('/api/recipes/<int:recipe_id>/edit/save_instructions', methods = ['POST'])
-def save_instructions(recipe_id):
-    selected_recipe = Recipe.query.get(recipe_id)
+
+@app.route('/api/save_instructions', methods=['POST'])
+def save_instructions():
+    selected_recipe = Recipe.query.get(request.json['recipe_id'])
+    print('********************************************************************')
+    print(request.json['recipe_id'])
     if selected_recipe.instructions:
-        selected_recipe.instructions = []
+        for instruction in selected_recipe.instructions:
+            Instruction.query.filter_by(id=instruction.id).delete()
+            db.session.commit()
     instructions = list(request.json['instructions'])
     for instruction in instructions:
         if instruction != '':
-            new_instruction = Instruction(text=instruction, recipe_id = recipe_id)
+            new_instruction = Instruction(
+                text=instruction, recipe_id=selected_recipe.id)
             selected_recipe.instructions.append(new_instruction)
-    db.session.commit()
+        db.session.commit()
     return 'success'
 
-@app.route('/api/users/<int:curr_user_id>/friends/add/<int:new_follower_id>', methods = ['POST'])
+
+@app.route('/api/users/<int:curr_user_id>/friends/add/<int:new_follower_id>', methods=['POST'])
 def add_friend(curr_user_id, new_follower_id):
     if g.user.id == curr_user_id:
         curr_user = User.query.get(curr_user_id)
@@ -356,8 +419,65 @@ def add_friend(curr_user_id, new_follower_id):
         curr_user.following.append(user_to_follow)
         db.session.commit()
         return redirect(f'/users/{curr_user_id}/friends')
-#*******************************************************************************
-#KrogerApi
+
+
+@app.route('/api/users/<int:curr_user_id>/friends/remove/<int:goner_follower_id>', methods=['POST'])
+def remove_friend(curr_user_id, goner_follower_id):
+    if g.user.id == curr_user_id:
+        curr_user = User.query.get(curr_user_id)
+        user_to_follow = User.query.get(goner_follower_id)
+        curr_user.following.remove(user_to_follow)
+        db.session.commit()
+        return redirect(f'/users/{curr_user_id}/friends')
+
+
+def create_recipe_copy(recipe_id):
+    selected_recipe = Recipe.query.get(recipe_id)
+    recipe_name = f'{selected_recipe.name}' + '(copy)'
+    recipe_url = selected_recipe.url
+    recipe_source = selected_recipe.source
+    recipe_user_id = g.user.id
+    recipe_tags = selected_recipe.tags
+    recipe_ingredients = selected_recipe.child_ingredients
+    recipe_custom_ingredients = selected_recipe.child_custom_ingredients
+
+    # create recipe and redirect to the edit screen
+    copied_recipe = Recipe(name=recipe_name,
+                           url=recipe_url,
+                           source=recipe_source,
+                           user_id=recipe_user_id,
+                           tags=recipe_tags,
+                           child_ingredients=recipe_ingredients,
+                           child_custom_ingredients=recipe_custom_ingredients)
+    return copied_recipe
+
+@app.route('/api/recipes/<int:recipe_id>/copy', methods=['POST'])
+def copy_recipe(recipe_id):
+    copied_recipe = create_recipe_copy(recipe_id)
+    db.session.add(copied_recipe)
+    db.session.commit()
+    return redirect(f'/recipes/{copied_recipe.id}/edit')
+
+@app.route('/api/cookbooks/<int:cookbook_id>/copy', methods=['POST'])
+def copy_cookbook(cookbook_id):
+    selected_cookbook = Cookbook.query.get(cookbook_id)
+    cookbook_name = f'{selected_cookbook.name}' + '(copy)' 
+    cookbook_user_id = g.user.id
+    cookbook_recipes = []
+    for recipe in selected_cookbook.recipes:
+        recipe_copy = create_recipe_copy(recipe.id)
+        db.session.add(recipe_copy)
+        db.session.commit()
+        cookbook_recipes.append(recipe_copy)
+    copied_cookbook = Cookbook(name=cookbook_name, user_id = cookbook_user_id)
+    db.session.add(copied_cookbook)
+    db.session.commit()
+    copied_cookbook.recipes = cookbook_recipes
+    db.session.commit()
+    return redirect(f'/users/{g.user.id}')
+# *******************************************************************************
+# KrogerApi
+
 
 """ @app.route('/api/get_access_token', methods = ['GET'])
 def get_token():

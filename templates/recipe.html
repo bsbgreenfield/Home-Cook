@@ -17,8 +17,13 @@ New Recipe
     </form>
     <div class="recipe-tags">
       {% for tag in recipe.tags %}
-      <div class="tag">
-        {{tag.name}}
+      <div class="tag" data-tag-id = "{{tag.id}}">
+        <div>
+          {{tag.name}}
+        </div>
+        <div > 
+          <svg viewBox="0 0 24 24" class="delete-tag"><path d="M24 20.188l-8.315-8.209 8.2-8.282-3.697-3.697-8.212 8.318-8.31-8.203-3.666 3.666 8.321 8.24-8.206 8.313 3.666 3.666 8.237-8.318 8.285 8.203z"/></svg>
+         </div>
       </div>
       {% endfor %}
     </div>
@@ -45,6 +50,7 @@ New Recipe
                   {% for error in field.errors %}
                     <span>{{ error }}</span>
                   {% endfor %}
+                  <span>Search For an Ingredient: </span>
                   <span>{{ field(placeholder=field.label.text) }}</span>
                 {% endfor %}
             </form>
@@ -100,7 +106,7 @@ New Recipe
             </div>
         </div>
         <div class="build-button">
-            <button type="submit" form="build-recipe-form" class="submit">Save Recipe</button>
+            <button type="submit" form="build-recipe-form" class="submit" data-curr-recipe = {{recipe.id}}>Save Recipe</button>
         </div>
        
     </div>

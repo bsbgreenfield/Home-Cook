@@ -94,13 +94,13 @@ function rebuildRecipeMarkupOnLoad(secondaryClass, ingredient, ingredientData) {
         quantityInput.value = `${ingredientData[0]}`
     }
     else {
-        quantityInput.value = '-'
+        quantityInput.placeholder = '-'
     }
     if (ingredientData[1] != null) {
         measureInput.value = `${ingredientData[1]}`;
     }
     else {
-        measureInput.value = '-'
+        measureInput.placeholder = '-'
     }
     quantityInput.readOnly = true, measureInput.readOnly = true;
     inputContainer.appendChild(quantityInput), inputContainer.appendChild(measureInput)
@@ -189,37 +189,32 @@ const delete_ingredient = async function delete_ingredient(e) {
             delete_ingredient_logic(ingredient_id, 'custom')
         }
     }
-    /*  if (e.target.parentElement.classList.contains('standard-ingredient')){
-         if (e.target.tagName == 'svg'){
-             ingredient_goner = e.target.parentElement.parentElement
-             delete_ingredient_logic(ingredient_goner, 'standard')
-         }
-         else if (e.target.tagName == 'path'){
-             ingredient_goner = e.target.parentElement.parentElement.parentElement
-             delete_ingredient_logic(ingredient_goner, 'standard')
-         }
-     }
-     else if (e.target.parentElement.classList.contains('custom-ingredient')){
-         console.log('customingr')
-         if (e.target.tagName == 'svg'){
-             ingredient_goner = e.target.parentElement.parentElement
-             delete_ingredient_logic(ingredient_goner, 'custom')
-         }
-         else if (e.target.tagName == 'path'){
-             ingredient_goner = e.target.parentElement.parentElement.parentElement
-             delete_ingredient_logic(ingredient_goner, 'custom')
-         }
-     } */
 
 }
 
 async function delete_ingredient_logic(ingredient_id, ingrType) {
     let id = parseInt(ingredient_id.substring(1))
     let body = { 'ingredient_type': `${ingrType}`, 'ingredient_id': id }
-    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/delete`, json = body)
+    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/delete_ingredient`, json = body)
 
 }
 
+const delete_tag = async function(e){
+    let tag_goner = e.currentTarget
+    let tagId = e.currentTarget.getAttribute('data-tag-id')
+    let body = {'tag_id': tagId}
+    console.log(tagId, e.currentTarget)
+    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/delete_tag`, json = body)
+    if (response.data == 'success'){
+        tag_goner.remove()
+    }
+}
+
+// add event listeners to the tags for deletion
+const allTags = document.querySelectorAll('.tag')
+for (let tag of allTags){
+    tag.addEventListener('click', delete_tag)
+}
 
 async function useSuggestion(e) {
     console.log(e.target)
@@ -312,11 +307,13 @@ const newInstructionLineClicker = function newInstructionLine(e) {
 newInstructionButton.addEventListener('click', newInstructionLineClicker)
 
 
+
 // submit 
 const saveRecipeButton = document.querySelector('.submit')
 
 const saveInstructionInfo = async function (e) {
-    let data = { 'instructions': [] }
+    let recipeId = e.currentTarget.getAttribute('data-curr-recipe')
+    let data = { 'recipe_id': recipeId,'instructions': [] }
     let instructionData = Array.prototype.slice.call(instructionInputArea.children)
     instructionData.forEach(element => {
         let instructionText = element.querySelector('.instruction-input')
@@ -324,7 +321,7 @@ const saveInstructionInfo = async function (e) {
             data['instructions'].push(instructionText.value)
         }
     });
-    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/save_instructions`, json = data)
+    let response = await axios.post(`http://127.0.0.1:5000/api/save_instructions`, json = data)
 }
 saveRecipeButton.addEventListener('click', saveInstructionInfo)
 

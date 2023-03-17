@@ -16,6 +16,9 @@ async function followUser(user_id){
     console.log(response)
 }
 
+async function unfollowUser(user_id){
+    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/remove/${user_id}`)
+}
 /* for (let card of currentSearchedUsers){
     card.addEventListener('click', selectSearchedUser)
 } */

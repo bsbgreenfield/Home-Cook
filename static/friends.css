@@ -48,9 +48,10 @@
    grid-template-columns: 3fr 2fr;
    grid-template-rows: min-content 1fr 1fr;
    grid-auto-flow: column;
-   cursor: default;
 }
-
+.friends-page-card-contents{
+    cursor: default;
+}
 .user-card-wrapper{
     max-width: 300px;
     height: max-content;

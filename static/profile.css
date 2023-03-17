@@ -51,10 +51,12 @@
 .cookbook-card-wrapper{
     border: 5px solid rgb(107, 116, 220);
 }
+
 .card-inner{
     height: 90%;
 }
 .profile-user-banner{
+    position: relative;
     grid-row-start: 1;
     grid-row-end: 3;
     background-color: #efefef;
@@ -77,11 +79,11 @@
 #profile-page-following-list div{
     padding-bottom: 5px;
 }
-
 #profile-page-followers-list ul{
     padding-inline-start: 10px;
     font-weight: 300;
-    max-height: 40%;
+    max-height: 30vh;
+    overflow-y: scroll;
 }
 #profile-page-follower-lists div{
     padding-bottom: 5px;
@@ -95,4 +97,27 @@
     grid-column-start: 1;
     grid-column-end: 3;
     text-decoration: unset;
+}
+#profile-header-disp{
+    font-size: 45px;
+    margin-left: 5%;
+    margin-top: 5%;
+}
+
+#edit-own-profile{
+    position: absolute;
+    bottom: 5px;
+    left: 20%;
+}
+
+#edit-own-profile button{
+    background-color: rgb(218, 52, 91) ;
+    color: white;
+    border: none;
+    border-radius: 3px;
+}
+#edit-own-profile button:hover{
+    background-color: white ;
+    color:  rgb(218, 52, 91); 
+    cursor: pointer;
 }

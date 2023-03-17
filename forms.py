@@ -16,7 +16,7 @@ class SignUpForm(FlaskForm):
     password = PasswordField('Password', validators = [DataRequired(), Length(min=6)])
     full_name = StringField('Name', validators = [DataRequired()])
     email = StringField('Email', validators = [DataRequired(), Email()])
-    profile_pic = StringField('Profile Photo')
+    profile_pic = StringField('Profile Photo (URL)')
 
 class AddCookbookForm(FlaskForm):
     """ADD a new cookbook"""
@@ -46,6 +46,15 @@ class RecipeQuickAdd(FlaskForm):
 
 class FriendSearchForm(FlaskForm):
     username = StringField('Search For a user', validators=[DataRequired()] )
+
+class ChangeInfoForm(FlaskForm):
+    username = StringField('Username', validators = [DataRequired()])
+    new_username = StringField('New Username (Optional)', validators=[Optional()])
+    password = PasswordField('Password', validators = [DataRequired(), Length(min=6)])
+    new_password = PasswordField('New Password', validators=[Optional(), Length(min=6)])
+    full_name = StringField('Name', validators = [DataRequired()])
+    email = StringField('Email', validators = [DataRequired(), Email()])
+    profile_pic = StringField('Profile Photo (URL)')
 
 
     
