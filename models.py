@@ -137,7 +137,6 @@ class Recipe(db.Model):
     cookbook = db.relationship(
         'Cookbook', backref='recipes')
     child_ingredients = db.relationship('Ingredient', secondary = 'recipes_ingredients', backref='recipes')
-    child_custom_ingredients = db.relationship('CustomIngredient', secondary = 'recipes_custom_ingredients', backref= 'recipe' )
     instructions = db.relationship('Instruction', backref='recipe')
     notes = db.relationship('Note', backref='recipe')
     tags = db.relationship('Tag', secondary = 'recipes_tags', backref = 'attached_recipes')
@@ -148,7 +147,6 @@ class Recipe(db.Model):
             "rating":self.rating or 'unrated',
             'user_id':self.user_id,
             'ingredients': [{'id':ingredient.id, 'name': ingredient.name, 'price': ingredient.price} for ingredient in self.child_ingredients],
-            'custom_ingredients': [{'id': custom_ingredient.id, 'name': custom_ingredient.name} for custom_ingredient in self.custom_ingredients],
             'instructions': [{'id': instruction.id, 'text': instruction.text} for instruction in self.instructions],
             'url' : self.url
         }
@@ -210,14 +208,7 @@ class Ingredient(db.Model):
 
     parent_recipes = db.relationship('Recipe', secondary='recipes_ingredients', backref = 'ingredients')
 
-class CustomIngredient(db.Model):
-    
-    __tablename__ = 'custom_ingredients'
-    id = db.Column(db.Integer,
-                   primary_key=True,
-                   autoincrement=True)
-    name = db.Column(db.String, nullable = False)
-    parent_recipes = db.relationship('Recipe', secondary='recipes_custom_ingredients', backref = 'custom_ingredients')
+
 
 class recipe_ingredient(db.Model):
 
@@ -230,17 +221,3 @@ class recipe_ingredient(db.Model):
     quantity = db.Column(db.String, nullable = True)
     measure = db.Column(db.String, nullable = True)
 
-class recipe_custom_ingredient(db.Model):
-
-    __tablename__ = 'recipes_custom_ingredients'
-
-    id = db.Column(db.Integer,
-                   primary_key=True,
-                   autoincrement=True)
-    recipe_custom_ingr = db.Column(
-        db.Integer, db.ForeignKey('custom_ingredients.id', ondelete="cascade"), nullable=False)
-    ingredient_recipe = db.Column(
-        db.Integer, db.ForeignKey('recipes.id', ondelete="cascade"), nullable=False)
-    quantity = db.Column(db.String, nullable= True)
-    measure = db.Column(db.String, nullable = True)
-    price = db.Column(db.Integer, nullable = True)

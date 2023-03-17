@@ -56,6 +56,45 @@ const popOutRecipe = async function recipePopper(e) {
         generate_existing_recipe_markup(recipeHeader, recipeIngredients, recipeInstructions, response)
     }
 }
+
+async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngredients, pageRecipeInstructions, response){
+
+    // recipe header
+    let recipeName = document.createElement('h2')
+    recipeName.innerText = response.data.recipe.name
+    let editLink = document.createElement('a')
+    editLink.href = `/recipes/${response.data.recipe.id}/edit`
+    editLink.innerText = 'edit'
+    editLink.className = 'edit-recipe-link'
+    pageRecipeHeader.appendChild(editLink)
+    pageRecipeHeader.appendChild(recipeName)
+   
+    //recipe ingredients
+    console.log(response.data.recipe)
+    let recipeIngredientlist = response.data.recipe.ingredients
+    for (let ingredient of recipeIngredientlist) {
+        let ingredientWrapper = document.createElement('div')
+        let newIngredient = document.createElement('label');
+        let newIngredientCheckbox = document.createElement('input');
+        newIngredient.innerText = ingredient.name, newIngredient.setAttribute('for', `i${ingredient.id}`)
+        newIngredientCheckbox.id = `i${ingredient.id}`
+        newIngredientCheckbox.type = 'checkbox'
+
+        ingredientWrapper.appendChild(newIngredient)
+        ingredientWrapper.appendChild(newIngredientCheckbox)
+        pageRecipeIngredients.appendChild(ingredientWrapper)
+    }
+    //recipe instructions
+    let recipeInstructionList = response.data.recipe.instructions
+    let instructionUl = document.createElement('ol')
+    for (let instruction of recipeInstructionList) {
+        let newInstruction = document.createElement('li')
+        newInstruction.innerText = instruction.text
+        instructionUl.appendChild(newInstruction)
+    }
+    pageRecipeInstructions.appendChild(instructionUl)
+}
+
 if (recipeSelectArea) {
 
     recipeSelectArea.addEventListener('click', popOutRecipe)
@@ -110,7 +149,36 @@ const searchKeyword = async function edamamSearch(e) {
 
 
 }
+function extractEdamamData(hits) {
+    const cards = []
+    //extract the data needed from the given hits from edamam
+    for (let hit of hits) {
+        let recipeUrl = hit.recipe.url
+        let recipeName = hit.recipe.label
+        let recipeImage = hit.recipe.image
+        let recipeSource = hit.recipe.source
 
+        recipeCuisine = []
+        for (i = 0; i < 2; i++) {
+            recipeCuisine.push(hit.recipe.cuisineType[i])
+        }
+
+        let ingredients = []
+        for (let ingredient of hit.recipe.ingredients) {
+            ingredients.push(ingredient.food)
+        }
+
+        const newCard = generateSuggestionsMarkup(recipeUrl,
+            recipeName,
+            recipeImage,
+            recipeSource,
+            recipeCuisine,
+            ingredients)
+        newCard.firstChild.setAttribute('data-recipe-index', hits.indexOf(hit))
+        cards.push(newCard)
+    }
+    return cards
+}
 
 if (keywordSearchForm) {
     keywordSearchForm.addEventListener('submit', searchKeyword)
@@ -173,36 +241,7 @@ function generateSuggestionsMarkup(recipeUri, recipeName, recipeImage, recipeSou
 
     return cardWrapper
 }
-function extractEdamamData(hits) {
-    const cards = []
-    //extract the data needed from the given hits from edamam
-    for (let hit of hits) {
-        let recipeUrl = hit.recipe.url
-        let recipeName = hit.recipe.label
-        let recipeImage = hit.recipe.image
-        let recipeSource = hit.recipe.source
 
-        recipeCuisine = []
-        for (i = 0; i < 2; i++) {
-            recipeCuisine.push(hit.recipe.cuisineType[i])
-        }
-
-        let ingredients = []
-        for (let ingredient of hit.recipe.ingredients) {
-            ingredients.push(ingredient.food)
-        }
-
-        const newCard = generateSuggestionsMarkup(recipeUrl,
-            recipeName,
-            recipeImage,
-            recipeSource,
-            recipeCuisine,
-            ingredients)
-        newCard.firstChild.setAttribute('data-recipe-index', hits.indexOf(hit))
-        cards.push(newCard)
-    }
-    return cards
-}
 // use edamam suggestions
 
 const useEdamamRecipe = async function (e) {
@@ -228,7 +267,7 @@ const useEdamamRecipe = async function (e) {
         'ingredients': ingredients,
     }
     response = await axios.post('/recipes/build/edamam', json = tinyJson)
-    location.href = `http://127.0.0.1:5000${response.data}`
+    window.location.href = `http://127.0.0.1:5000${response.data}`
 }
 
 
@@ -260,54 +299,3 @@ if (recipeSelectArea) {
 
 
 
-async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngredients, pageRecipeInstructions, response){
-
-     // recipe header
-     let recipeName = document.createElement('h2')
-     recipeName.innerText = response.data.recipe.name
-     let editLink = document.createElement('a')
-     editLink.href = `/recipes/${response.data.recipe.id}/edit`
-     editLink.innerText = 'edit'
-     editLink.className = 'edit-recipe-link'
-     pageRecipeHeader.appendChild(editLink)
-     pageRecipeHeader.appendChild(recipeName)
-    
-     //recipe ingredients
-     console.log(response.data.recipe)
-     let recipeIngredientlist = response.data.recipe.ingredients
-     let recipeCustomIngredients = response.data.recipe.custom_ingredients
-     for (let ingredient of recipeIngredientlist) {
-         let ingredientWrapper = document.createElement('div')
-         let newIngredient = document.createElement('label');
-         let newIngredientCheckbox = document.createElement('input');
-         newIngredient.innerText = ingredient.name, newIngredient.setAttribute('for', `i${ingredient.id}`)
-         newIngredientCheckbox.id = `i${ingredient.id}`, newIngredientCheckbox.value = ingredient.price
-         newIngredientCheckbox.type = 'checkbox'
-         // add onclick event
-         ingredientWrapper.appendChild(newIngredient)
-         ingredientWrapper.appendChild(newIngredientCheckbox)
-         pageRecipeIngredients.appendChild(ingredientWrapper)
-     }
-     for (let ingredient of recipeCustomIngredients) {
-         let ingredientWrapper = document.createElement('div')
-         let newIngredient = document.createElement('label');
-         let newIngredientCheckbox = document.createElement('input');
-         newIngredient.innerText = ingredient.name, newIngredient.setAttribute('for', `c${ingredient.id}`)
-         newIngredientCheckbox.id = `c${ingredient.id}`, newIngredientCheckbox.value = ingredient.price
-         newIngredientCheckbox.type = 'checkbox'
-         // add onclick event
-         ingredientWrapper.appendChild(newIngredient)
-         ingredientWrapper.appendChild(newIngredientCheckbox)
-         pageRecipeIngredients.appendChild(ingredientWrapper)
-     }
-
-     //recipe instructions
-     let recipeInstructionList = response.data.recipe.instructions
-     let instructionUl = document.createElement('ol')
-     for (let instruction of recipeInstructionList) {
-         let newInstruction = document.createElement('li')
-         newInstruction.innerText = instruction.text
-         instructionUl.appendChild(newInstruction)
-     }
-     pageRecipeInstructions.appendChild(instructionUl)
-}

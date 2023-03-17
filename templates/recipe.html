@@ -50,7 +50,7 @@ New Recipe
                   {% for error in field.errors %}
                     <span>{{ error }}</span>
                   {% endfor %}
-                  <span>Search For an Ingredient: </span>
+                  <span class="search-display">Search For an Ingredient: </span>
                   <span>{{ field(placeholder=field.label.text) }}</span>
                 {% endfor %}
             </form>
