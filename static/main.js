@@ -86,18 +86,27 @@ const searchKeyword = async function edamamSearch(e) {
     // append first seven results to the grid
 
     for (i = 0; i < 19; i++) {
-        hits.push(response.data.hits[i])
+        if (response.data.hits[i]){
+            hits.push(response.data.hits[i])
+        }
     }
-    const completedRecipeCards = extractEdamamData(hits) // returns an array of cards
-    for (card of completedRecipeCards) {
-        edamamSuggestionsArea.appendChild(card)
+    if (hits.length > 0){
+        const completedRecipeCards = extractEdamamData(hits) // returns an array of cards
+        for (card of completedRecipeCards) {
+            edamamSuggestionsArea.appendChild(card)
+        }
+        mainRecipeAreaWrapper.appendChild(edamamSuggestionsArea)
+        
+        loader.style.display = 'none'
+        edamamSuggestionsArea.style.display = 'grid'
     }
-
-
-    mainRecipeAreaWrapper.appendChild(edamamSuggestionsArea)
-
-    loader.style.display = 'none'
-    edamamSuggestionsArea.style.display = 'grid'
+    else{
+        loader.style.display = 'none'
+        placeholder.firstElementChild.innerText = 'No recipes found'
+        placeholder.style.display = 'flex'
+    }
+    
+    
 
 
 }

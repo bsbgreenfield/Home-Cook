@@ -79,3 +79,33 @@ margin-right: 5px;
     grid-row-start: 8;
     grid-row-end:10;
 }
+
+.take-cookbook{
+    position: absolute;
+    right: 10%;
+    width: min-content;
+    background-color: rgb(107, 116, 220) ;
+    border: none;
+    border-radius: 5px;
+    color: white;
+}
+.take-cookbook:hover{
+    color: rgb(107, 116, 220);
+    background-color: #efefef;
+    cursor: pointer;
+}
+.take-recipe{
+    position: absolute;
+    top: 45%;
+    right: 1%;
+    width: min-content;
+    background-color: rgb(218, 52, 91) ;
+    border: none;
+    border-radius: 5px;
+    color: white;
+}
+.take-recipe:hover{
+    background-color: white;
+    color: rgb(218, 52, 91);
+    cursor: pointer;
+}

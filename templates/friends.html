@@ -15,11 +15,13 @@
                             <img src="{{friend.profile_pic}}" alt="" class="profile-pic-large">
                             </div>
                         </a>
-                        <div class="card-contents">
+                        <div class="card-contents friends-page-card-contents">
                             <div>{{friend.username}}</div>
                             <div>({{friend.full_name}})</div>
                             <div>Cookbooks: {{friend.cookbooks | length}}</div>
-                            <div class="unfollow-button"><button>unfollow</button></div>
+                            <form action="/api/users/{{g.user.id}}/friends/remove/{{friend.id}}" method="POST">
+                                <div class="unfollow-button"><button>unfollow</button></div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -36,7 +38,7 @@
                             <img src="{{friend.profile_pic}}" alt="" class="profile-pic-large">
                             </div>
                         </a>
-                        <div class="card-contents">
+                        <div class="card-contents friends-page-card-contents">
                             <div>{{friend.username}}--</div>
                             <div>({{friend.full_name}})</div>
                             <div>Cookbooks: {{friend.cookbooks | length}}</div>
@@ -81,17 +83,21 @@
                                 <img src="{{user.profile_pic}}" alt="" class="profile-pic-large">
                                 </div>
                             </a>
-                            <div class="card-contents">
+                            <div class="card-contents friends-page-card-contents">
                                 <div>{{user.username}}</div>
                                 <div>({{user.full_name}})</div>
                                 <div>cookbooks: {{user.cookbooks | length}}</div>
-                                <form action="/api/users/{{g.user.id}}/friends/add/{{user.id}}" method="POST">
+                                
                                 {% if user in g.user.following %}
-                                <div class="unfollow-button"><button>unfollow</button></div>
-                                {% else %}
-                                <div class="follow-button"><button>Follow!</button></div>
-                                {% endif %}
+                                <form action="/api/users/{{g.user.id}}/friends/remove/{{user.id}}" method="POST">
+                                    <div class="unfollow-button"><button>unfollow</button></div>
                                 </form>
+                                {% else %}
+                                <form action="/api/users/{{g.user.id}}/friends/add/{{user.id}}" method="POST">
+                                    <div class="follow-button"><button>Follow!</button></div>
+                                 </form>
+                                {% endif %}
+                               
                                
                             </div>
                         </div>

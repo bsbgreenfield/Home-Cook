@@ -10,7 +10,12 @@
 <div class="cookbook-display-wrapper">
     <div class="cookbook-display-grid">
         <div class="cookbook-display-header"> 
-            <span class="header"> {{cookbook.name}}</span>
+            <span class="header"> {{cookbook.name}} 
+                {% if cookbook.user.id != g.user.id %}
+                <form action="/api/cookbooks/{{cookbook.id}}/copy" method="POST"><button class="take-cookbook" >Copy Cookbook</button></form> 
+                {% else %}
+                {% endif %}
+            </span>
         </div>
         <div class="cookbook-display-recipe-sidebar">
                 {% for recipe in cookbook.recipes %}

@@ -96,6 +96,11 @@ class User(db.Model):
                 return False
         return False
     
+    @classmethod
+    def encrypt_new_password(cls, password):
+        hashed_password = bcrypt.generate_password_hash(
+            password).decode('UTF-8')
+        return hashed_password
 
 class Cookbook(db.Model):
     """cookbook class
@@ -175,7 +180,7 @@ class Instruction(db.Model):
                    autoincrement=True)
     text = db.Column(db.Text, nullable=False)
     recipe_id = db.Column(db.Integer, db.ForeignKey(
-        'recipes.id', ondelete='CASCADE'), nullable=False)
+        'recipes.id', ondelete='CASCADE'), nullable=True)
     
 
 
