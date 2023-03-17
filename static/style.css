@@ -84,6 +84,10 @@ color: rgb(218, 52, 91);
     overflow: hidden;
     margin: 5px;
 }
+.profile-pic-wrapper:hover{
+    background-color: #efefef;
+    border: 1px solid red;
+}
 .profile-pic-wrapper img{
     max-width: 100%;
     max-height: 100%;
