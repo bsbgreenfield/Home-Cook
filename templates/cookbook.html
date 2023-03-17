@@ -14,6 +14,7 @@
                 {% if cookbook.user.id != g.user.id %}
                 <form action="/api/cookbooks/{{cookbook.id}}/copy" method="POST"><button class="take-cookbook" >Copy Cookbook</button></form> 
                 {% else %}
+                <form action="/cookbooks/{{cookbook.id}}/edit"><button class="take-cookbook">Edit Cookbook</button></form>
                 {% endif %}
             </span>
         </div>

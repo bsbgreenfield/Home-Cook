@@ -243,6 +243,15 @@ def add_new_cookbook(user_id):
         return redirect(f'/users/{user_id}')
     return render_template('add_cookbook.html', form=form)
 
+@app.route('/cookbooks/<int:cookbook_id>/edit', methods = ['GET', 'POST'])
+def edit_cookbook(cookbook_id):
+    selected_cookbook = Cookbook.query.get(cookbook_id)
+    form = AddCookbookForm(obj=selected_cookbook )
+    if form.validate_on_submit():
+        selected_cookbook.name = form.name.data
+        db.session.commit()
+        return redirect(f'/users/{g.user.id}')
+    return render_template('edit_cookbook.html', form=form, cookbook=selected_cookbook )
 
 @app.route('/users/<int:user_id>/profile')
 def profile_view(user_id):
@@ -409,6 +418,15 @@ def save_instructions():
             selected_recipe.instructions.append(new_instruction)
         db.session.commit()
     return 'success'
+
+@app.route('/api/cookbooks/<int:cookbook_id>/remove_recipe/<int:recipe_id>', methods = ['POST'])
+def remove_recipe(cookbook_id, recipe_id):
+        selected_cookbook = Cookbook.query.get(cookbook_id)
+        goner_recipe = Recipe.query.get(recipe_id)
+        if goner_recipe in selected_cookbook.recipes:
+            selected_cookbook.recipes.remove(goner_recipe)
+            db.session.commit()
+        return 'recipe-removed'
 
 
 @app.route('/api/users/<int:curr_user_id>/friends/add/<int:new_follower_id>', methods=['POST'])
