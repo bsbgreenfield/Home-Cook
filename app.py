@@ -458,6 +458,7 @@ def create_recipe_copy(recipe_id):
     recipe_tags = selected_recipe.tags
     recipe_ingredients = selected_recipe.child_ingredients
     recipe_custom_ingredients = selected_recipe.child_custom_ingredients
+    recipe_instructions = [Instruction(text=instruction.text) for instruction in selected_recipe.instructions]
 
     # create recipe and redirect to the edit screen
     copied_recipe = Recipe(name=recipe_name,
@@ -466,7 +467,8 @@ def create_recipe_copy(recipe_id):
                            user_id=recipe_user_id,
                            tags=recipe_tags,
                            child_ingredients=recipe_ingredients,
-                           child_custom_ingredients=recipe_custom_ingredients)
+                           child_custom_ingredients=recipe_custom_ingredients,
+                           instructions = recipe_instructions)
     return copied_recipe
 
 @app.route('/api/recipes/<int:recipe_id>/copy', methods=['POST'])

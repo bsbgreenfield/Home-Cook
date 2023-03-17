@@ -70,7 +70,7 @@
 #profile-page-following-list ul{
     padding-inline-start: 10px;
     font-weight: 300;
-    max-height: 30vh;
+    max-height: 15vh;
     overflow-y: scroll;
 }
 #profile-page-following-list ul::-webkit-scrollbar{
@@ -82,7 +82,7 @@
 #profile-page-followers-list ul{
     padding-inline-start: 10px;
     font-weight: 300;
-    max-height: 30vh;
+    max-height: 15vh;
     overflow-y: scroll;
 }
 #profile-page-follower-lists div{
