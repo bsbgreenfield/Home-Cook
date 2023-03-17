@@ -109,3 +109,46 @@ margin-right: 5px;
     color: rgb(218, 52, 91);
     cursor: pointer;
 }
+
+#edit-cookbook-wrapper button{
+    min-width: fit-content;
+    width: 10%;
+    position: absolute;
+    right: 5%;
+    height: 50px;
+    background-color:rgb(107, 116, 220) ;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+#edit-cookbook-wrapper button:hover{
+    background-color: #efefef;
+    color: rgb(107, 116, 220);
+    cursor: pointer;
+}
+.cookbook-recipe-item{
+    position: relative;
+    text-align: left;
+    margin: 15px;
+    font-size: 30px;
+    background-color: #efefef;
+    padding-right: 50px;
+}
+#recipe-items-wrapper{
+    display: flex;
+    justify-content: center;
+    max-height: 60vh;
+    overflow-y: scroll;
+}
+#recipe-items-wrapper > div{
+    width: fit-content;
+}
+#cookbook_form{
+    font-size: 30px;
+}
+#cookbook_form input{
+    margin-left: 15px;
+    border-radius: 5px;
+    font-size: 25px;
+    height: fit-content;
+}
