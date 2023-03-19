@@ -58,6 +58,7 @@ const popOutRecipe = async function recipePopper(e) {
 }
 
 async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngredients, pageRecipeInstructions, response){
+/** generate markup for when user chooses to 'pop out' recipe without editing it */ 
 
     // recipe header
     let recipeName = document.createElement('h2')

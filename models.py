@@ -220,4 +220,6 @@ class recipe_ingredient(db.Model):
         db.Integer, db.ForeignKey('recipes.id', ondelete="cascade"), primary_key=True)
     quantity = db.Column(db.String, nullable = True)
     measure = db.Column(db.String, nullable = True)
+    prep = db.Column(db.String, nullable = True)
+    recipe_instance = db.Column(db.Integer, nullable = False)
 

@@ -92,10 +92,11 @@
                                 <form action="/api/users/{{g.user.id}}/friends/remove/{{user.id}}" method="POST">
                                     <div class="unfollow-button"><button>unfollow</button></div>
                                 </form>
-                                {% else %}
+                                {% elif user.id != g.user.id %}
                                 <form action="/api/users/{{g.user.id}}/friends/add/{{user.id}}" method="POST">
                                     <div class="follow-button"><button>Follow!</button></div>
-                                 </form>
+                                </form>
+                                {% else %}
                                 {% endif %}
                                
                                
