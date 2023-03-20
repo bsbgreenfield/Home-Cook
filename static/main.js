@@ -75,9 +75,20 @@ async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngre
     let recipeIngredientlist = response.data.recipe.ingredients
     for (let ingredient of recipeIngredientlist) {
         let ingredientWrapper = document.createElement('div')
-        let newIngredient = document.createElement('label');
+        let newIngredient = document.createElement('div');
+        let newIngredientName = document.createElement('div')
+        newIngredientName.innerText = ingredient.name
+
+        //get ingredient amounts if they exists
+        let newIngredientAmount = document.createElement('div')
+        let quantity = '';
+        let measure = '';
+        if (ingredient.quantity) quantity = ingredient.quantity
+        if (ingredient.measure) measure = ingredient.measure
+        newIngredientAmount.innerText = `(${quantity} ${measure})`
+        newIngredient.appendChild(newIngredientName), newIngredient.appendChild(newIngredientAmount)
         let newIngredientCheckbox = document.createElement('input');
-        newIngredient.innerText = ingredient.name, newIngredient.setAttribute('for', `i${ingredient.id}`)
+        newIngredient.setAttribute('for', `i${ingredient.id}`)
         newIngredientCheckbox.id = `i${ingredient.id}`
         newIngredientCheckbox.type = 'checkbox'
 
@@ -208,6 +219,7 @@ function generateSuggestionsMarkup(recipeUri, recipeName, recipeImage, recipeSou
     cardContents.appendChild(name)
 
     const link = document.createElement('a')
+    link.className = 'recipe-link'
     link.innerText = recipeSource
     link.href = `${recipeUri}`
     cardContents.appendChild(link)
@@ -246,29 +258,32 @@ function generateSuggestionsMarkup(recipeUri, recipeName, recipeImage, recipeSou
 // use edamam suggestions
 
 const useEdamamRecipe = async function (e) {
-    let hitIndex = e.currentTarget.getAttribute('data-recipe-index')
-    let recipeData = hits[hitIndex].recipe
-    let recipeCuisine = []
-    for (i = 0; i < 2; i++) {
-        recipeCuisine.push(recipeData.cuisineType[i])
+    if(e.target.className != 'recipe-link'){
+        let hitIndex = e.currentTarget.getAttribute('data-recipe-index')
+        let recipeData = hits[hitIndex].recipe
+        let recipeCuisine = []
+        for (i = 0; i < 2; i++) {
+            recipeCuisine.push(recipeData.cuisineType[i])
+        }
+    
+        let ingredients = []
+        for (let ingredient of recipeData.ingredients) {
+            let new_ingredient = {'food': ingredient.food, 'quantity': ingredient.quantity, 'measure': ingredient.measure}
+            ingredients.push(new_ingredient)
+        }
+        tinyJson = {
+            'name': recipeData.label,
+            'recipeUrl': recipeData.url,
+            'recipe_source': recipeData.source,
+            'recipe_image': recipeData.image,
+            'recipe_cuisine': recipeCuisine,
+            'health_labels': recipeData.healthLabels,
+            'ingredients': ingredients,
+        }
+        response = await axios.post('/recipes/build/edamam', json = tinyJson)
+        window.location.href = `http://127.0.0.1:5000${response.data}`
     }
-
-    let ingredients = []
-    for (let ingredient of recipeData.ingredients) {
-        let new_ingredient = {'food': ingredient.food, 'quantity': ingredient.quantity, 'measure': ingredient.measure}
-        ingredients.push(new_ingredient)
-    }
-    tinyJson = {
-        'name': recipeData.label,
-        'recipeUrl': recipeData.url,
-        'recipe_source': recipeData.source,
-        'recipe_image': recipeData.image,
-        'recipe_cuisine': recipeCuisine,
-        'health_labels': recipeData.healthLabels,
-        'ingredients': ingredients,
-    }
-    response = await axios.post('/recipes/build/edamam', json = tinyJson)
-    window.location.href = `http://127.0.0.1:5000${response.data}`
+  
 }
 
 

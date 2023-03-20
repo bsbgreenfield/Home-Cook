@@ -97,7 +97,9 @@ def signup():
         except IntegrityError:
             flash("Username is already taken!")
             return render_template('signup.html', form=form)
-
+        first_cookbook = Cookbook(name='My First Cookbook', user_id = user.id)
+        db.session.add(first_cookbook)
+        db.session.commit()
         do_login(user)
 
         return redirect('/')
@@ -193,31 +195,51 @@ def recipe_from_edamam():
             new_recipe.tags.append(new_tag)
     db.session.commit()
     for ingredient in ingredients:
-        # if the ingredient already exists, add it to the recipe, if not, create it.
+        # if it already exists, check if its in the recipe already,
+        #  create an appropriate unique ident either way
         existing_ingredient = Ingredient.query.filter(
             Ingredient.name.ilike(ingredient['food'])).first()
         if existing_ingredient:
-            new_recipe.child_ingredients.append(existing_ingredient)
-            relational_table_row = recipe_ingredient.query.filter(
+            # check if there is already a row for the ingredient
+            existing_recipe_ingredients = recipe_ingredient.query.filter(
                 (recipe_ingredient.recipe_ingredient == existing_ingredient.id) &
-                (recipe_ingredient.ingredient_recipe == new_recipe.id)).first()
-            # get measure and quantity if provided
-            relational_table_row.quantity = ingredient.get('quantity', None)
-            relational_table_row.measure = ingredient.get('measure', None)
+                (recipe_ingredient.ingredient_recipe == new_recipe.id)).all()
+            
+            # set unique ingredient identifier based off of 
+            # if there are other of the same ingredient in the receipe already
+            if existing_recipe_ingredients:
+                unique_ingredient_ident = f'{new_recipe.id}-{existing_ingredient.id}-{len(existing_recipe_ingredients) + 1}'
+            else:
+                unique_ingredient_ident = f'{new_recipe.id}-{existing_ingredient.id}-1'
+
+            new_ingredient_instance = recipe_ingredient(recipe_ingredient=existing_ingredient.id,
+                                                        ingredient_recipe=new_recipe.id,
+                                                        recipe_instance=unique_ingredient_ident)
+            db.session.add(new_ingredient_instance)
+            db.session.commit()
+            # get measure and quantity if provided, set it in the new ingredient row
+            new_ingredient_instance.quantity = ingredient.get('quantity', None)
+            if ingredient['measure'] == "<unit>":
+                new_ingredient_instance.measure = None
+            else:
+                new_ingredient_instance.measure = ingredient.get('measure', None)
         else:
             new_custom = Ingredient(name=ingredient['food'])
-            new_recipe.child_ingredients.append(new_custom)
+            db.session.add(new_custom)
             db.session.commit()
-            relational_table_row = recipe_ingredient.query.filter(
-                (recipe_ingredient.recipe_ingredient == new_custom.id) &
-                (recipe_ingredient.ingredient_recipe == new_recipe.id)).first()
-            # get measure and quantity if provided
-            relational_table_row.quantity = ingredient.get('quantity', None)
-            relational_table_row.measure = ingredient.get('measure', None)
-
-        # add in associated quantity and measure
-        db.session.add(relational_table_row)
-        db.session.commit()
+            unique_ingredient_ident = f'{new_recipe.id}-{new_custom.id}-1'
+            new_ingredient_instance = recipe_ingredient(recipe_ingredient=new_custom.id,
+                                                        ingredient_recipe=new_recipe.id,
+                                                        recipe_instance=unique_ingredient_ident)
+            # get measure and quantity if provided, set it in the new ingredient row
+            new_ingredient_instance.quantity = ingredient.get('quantity', None)
+            if ingredient['measure'] == "<unit>":
+                new_ingredient_instance.measure = None
+            else:
+                new_ingredient_instance.measure = ingredient.get('measure', None)
+            # add in associated quantity and measure
+            db.session.add(new_ingredient_instance)
+            db.session.commit()
     return f'/recipes/{new_recipe.id}/edit'
 
 
@@ -308,40 +330,53 @@ def send_recipe_data(recipe_id):
 @app.route('/api/recipes/<int:recipe_id>/edit/ingredient_info')
 def send_ingredient_data(recipe_id):
     """send ingredient data for each ingredient belonging to this recipe"""
-    recipe_rows = {f'{row.recipe_ingredient}': (
-        row.quantity, row.measure) for row in recipe_ingredient.query.filter_by(ingredient_recipe=recipe_id).all()}
+    recipe_rows = {row.recipe_instance: row.serialize_ingredient_row() for row
+                    in recipe_ingredient.query.filter_by(ingredient_recipe=recipe_id).all()}
     return jsonify(ingredientData=recipe_rows)
 
 
 @app.route('/api/recipes/<int:recipe_id>/edit/<string:ingredient_name>/add', methods=['POST'])
 def add_ingredient_to_recipe(recipe_id, ingredient_name):
     """add an ingredient to the recipe being edited
-        use an existing ingerdient if it exists"""
+        use an existing ingredient if it exists"""
     recipe = Recipe.query.get_or_404(recipe_id)
     if recipe.user_id == g.user.id:
         # check if the ingredient already exists
         ingredient = Ingredient.query.filter(
             Ingredient.name.ilike(ingredient_name)).first()
         if ingredient:
-            # if it exists, check if it is in this recipe 
-            existing_recipe_ingredient = recipe_ingredient.query.filter(
+            # if it exists, check if it is in this recipe
+            existing_recipe_ingredients = recipe_ingredient.query.filter(
                 (recipe_ingredient.recipe_ingredient == ingredient.id) &
-                (recipe_ingredient.ingredient_recipe == recipe_id)).first()
-            # if so, do not add ingredient, return AIR (already in recipe)
-            if existing_recipe_ingredient:
-                return ('AIR')
+                (recipe_ingredient.ingredient_recipe == recipe_id)).all()
+            # if so create a new row in recipe_ingredient with a new unique identifier
+            if existing_recipe_ingredients:
+                unique_ingredient_ident = f'{recipe.id}-{ingredient.id}-{len(existing_recipe_ingredients) + 1}'
             else:
-                response = {'id': f'{ingredient.id}', 'name': ingredient.name}
-                recipe.child_ingredients.append(ingredient)
-                db.session.commit()
-                return jsonify(response)
+                unique_ingredient_ident = f'{recipe.id}-{ingredient.id}-1'
+            new_ingredient_instance = recipe_ingredient(recipe_ingredient=ingredient.id,
+                                                        ingredient_recipe=recipe.id,
+                                                        recipe_instance=unique_ingredient_ident)
+            db.session.add(new_ingredient_instance)
+            db.session.commit()
+            response = {'id': f'{ingredient.id}',
+                        'name': ingredient.name,
+                        'ingredient_ident': unique_ingredient_ident}
+            return jsonify(response)
         # if ingredient doesnt already exist, create it and add it to recipe
         else:
             custom_ingredient = Ingredient(name=ingredient_name)
-            recipe.child_ingredients.append(custom_ingredient)
+            db.session.add(custom_ingredient)
+            db.session.commit()
+            unique_ingredient_ident = f'{recipe.id}-{custom_ingredient.id}-1'
+            new_ingredient_instance = recipe_ingredient(recipe_ingredient=custom_ingredient.id,
+                                                        ingredient_recipe=recipe.id,
+                                                        recipe_instance=unique_ingredient_ident)
+            db.session.add(new_ingredient_instance)
             db.session.commit()
             response = {'id': f'{custom_ingredient.id}',
-                        'name': custom_ingredient.name}
+                        'name': custom_ingredient.name,
+                        'ingredient_ident': unique_ingredient_ident}
             return jsonify(response)
     else:
         return 'not_authenticated'
@@ -353,18 +388,16 @@ def update_ingredient(recipe_id):
         quantity columns if appropriate"""
     selected_recipe = Recipe.query.get(recipe_id)
     if selected_recipe.user_id == g.user.id:
-        relational_table_row = recipe_ingredient.query.filter(
-            (recipe_ingredient.recipe_ingredient == request.json['id']) &
-            (recipe_ingredient.ingredient_recipe == recipe_id)).first()
+        relational_table_row = recipe_ingredient.query.get(request.json['ingredient_ident'])
         if relational_table_row:
             # set quantity info in relationsional table, repond with updated ingredient info
             relational_table_row.quantity = request.json['quantity']
             relational_table_row.measure = request.json['measure']
             db.session.commit()
-            responseId = request.json['id']
+            responseId = request.json['ingredient_ident']
         else:
             return 'ingredient_not_found'
-        response = {'id': responseId, 'quantity': relational_table_row.quantity,
+        response = {'ingredient_ident': responseId, 'quantity': relational_table_row.quantity,
                     'measure': relational_table_row.measure}
         return jsonify(response)
     else:
@@ -375,10 +408,10 @@ def update_ingredient(recipe_id):
 def delete_ingredient(recipe_id):
     recipe = Recipe.query.get_or_404(recipe_id)
     if recipe.user_id == g.user.id:
-        ingredient_id = request.json['ingredient_id']
-        ingredient = Ingredient.query.get(ingredient_id)
-        if ingredient:
-            recipe.child_ingredients.remove(ingredient)
+        ingredient_ident = request.json['ingredient_ident']
+        ingredient_row = recipe_ingredient.query.filter_by(recipe_instance =ingredient_ident)
+        if ingredient_row:
+            ingredient_row.delete()
             db.session.commit()
             return 'success'
         else:
@@ -485,7 +518,7 @@ def create_recipe_copy(recipe_id):
     recipe_source = selected_recipe.source
     recipe_user_id = g.user.id
     recipe_tags = selected_recipe.tags
-    recipe_ingredients = selected_recipe.child_ingredients
+    
     recipe_instructions = [Instruction(
         text=instruction.text) for instruction in selected_recipe.instructions]
 
@@ -495,8 +528,28 @@ def create_recipe_copy(recipe_id):
                            source=recipe_source,
                            user_id=recipe_user_id,
                            tags=recipe_tags,
-                           child_ingredients=recipe_ingredients,
                            instructions=recipe_instructions)
+    db.session.add(copied_recipe)
+    db.session.commit()
+    
+    # create ingredient instances
+    for ingredient_row in recipe_ingredient.query.filter_by(ingredient_recipe=selected_recipe.id).all():
+        existing_recipe_ingredients = recipe_ingredient.query.filter(
+                (recipe_ingredient.recipe_ingredient == ingredient_row.recipe_ingredient) &
+                (recipe_ingredient.ingredient_recipe == copied_recipe.id)).all()
+        # set unique ingredient identifier based off of 
+        # if there are other of the same ingredient in the receipe already
+        if existing_recipe_ingredients:
+            unique_ingredient_ident = f'{copied_recipe.id}-{ingredient_row.recipe_ingredient}-{len(existing_recipe_ingredients) + 1}'
+        else:
+            unique_ingredient_ident = f'{copied_recipe.id}-{ingredient_row.recipe_ingredient}-1'
+        new_ingredient_instance = recipe_ingredient(recipe_ingredient = ingredient_row.recipe_ingredient,
+                                                    ingredient_recipe = copied_recipe.id,
+                                                    quantity = ingredient_row.quantity,
+                                                    measure = ingredient_row.measure,
+                                                    recipe_instance = unique_ingredient_ident)
+        db.session.add(new_ingredient_instance)
+        db.session.commit()
     return copied_recipe
 
 
