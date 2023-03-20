@@ -94,23 +94,18 @@ async function generateIngredientMarkup(ingredientInputValue) {
 
     let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/${ingredientName}/add`)
     console.log(response)
-    
-    if (response.data == 'AIR'){
-        SearchDisplay.innerText = 'Ingredient already in use'
-        SearchDisplay.style.color = 'red'
-    }
-    else{
-        SearchDisplay.innerText = 'Search For an Ingredient:'
-        SearchDisplay.style.color = ''
-        // take response data and set data ingredient id attribute, then append html elements
-        newIngredient.setAttribute('data-ingredient-id', response.data.id)
-        ingredientDisplay.appendChild(newIngredient)
-        newIngredient.addEventListener('click', editIngredient)
-        ingredientSearchBar.value = ''
-        custom_ingr_form.style.display = 'none'
-        ingredientSuggestions.innerHTML = ''
-        ingredientSuggestions.style.display = 'grid'
-    }
+
+    SearchDisplay.innerText = 'Search For an Ingredient:'
+    SearchDisplay.style.color = ''
+
+    // take response data and set data ingredient id attribute, then append html elements
+    newIngredient.setAttribute('data-ingredient-id', response.data.ingredient_ident)
+    ingredientDisplay.appendChild(newIngredient)
+    newIngredient.addEventListener('click', editIngredient)
+    ingredientSearchBar.value = ''
+    custom_ingr_form.style.display = 'none'
+    ingredientSuggestions.innerHTML = ''
+    ingredientSuggestions.style.display = 'grid'
 }
 
 /* ***************************************************************************************
@@ -123,19 +118,19 @@ async function getRecipeInfo() {
     let recipeSpecificIngredientinfo = await axios.get(`http://127.0.0.1:5000/api${curr_url}/ingredient_info`)
     console.log(recipeSpecificIngredientinfo.data)
 
-    // run rebuildREcipeMarkupOnLoad with ingredient data
+    // run rebuildRecipeMarkupOnLoad with ingredient data
     for (let ingredient of recipeInfo.data.recipe.ingredients) {
-        let ingredientData = recipeSpecificIngredientinfo.data['ingredientData'][ingredient.id]
-        rebuildRecipeMarkupOnLoad(ingredient, ingredientData)       
+        let ingredientData = recipeSpecificIngredientinfo.data['ingredientData'][ingredient.ingredient_ident]
+        rebuildRecipeMarkupOnLoad(ingredientData)       
     }
 }
 
-function rebuildRecipeMarkupOnLoad(ingredient, ingredientData) {
+function rebuildRecipeMarkupOnLoad(ingredientData) {
     // set class, id attribute, and text
     let newIngredient = document.createElement('div')
     newIngredient.classList.add('added-ingredient')
-    newIngredient.setAttribute('data-ingredient-id', `${ingredient.id}`)
-    newIngredient.innerText = ingredient.name
+    newIngredient.setAttribute('data-ingredient-id', `${ingredientData.recipe_instance}`)
+    newIngredient.innerText = ingredientData.name
 
     // add delete button
     let delete_ingedrient_btn = document.createElement('div')
@@ -155,14 +150,14 @@ function rebuildRecipeMarkupOnLoad(ingredient, ingredientData) {
     let quantityInput = document.createElement('input')
     let measureInput = document.createElement('input')
     quantityInput.className = 'ingredient-quantity', measureInput.className = 'ingredient-measure';
-    if (ingredientData[0] != null) {
-        quantityInput.value = `${ingredientData[0]}`
+    if (ingredientData.quantity != null) {
+        quantityInput.value = ingredientData.quantity
     }
     else {
         quantityInput.placeholder = '-'
     }
-    if (ingredientData[1] != null) {
-        measureInput.value = `${ingredientData[1]}`;
+    if (ingredientData.measure != null) {
+        measureInput.value = ingredientData.measure
     }
     else {
         measureInput.placeholder = '-'
@@ -196,9 +191,9 @@ const editIngredient = function (e) {
     }
     else if (e.target.tagName == 'svg' || e.target.tagName == 'path') {
         // if delete button is pressed, run delete_ingredient_logic with ingredient id
-        let ingredient_id = e.currentTarget.getAttribute('data-ingredient-id')
-        console.log(ingredient_id)
-        delete_ingredient_logic(ingredient_id)
+        let ingredient_ident = e.currentTarget.getAttribute('data-ingredient-id')
+        console.log(ingredient_ident)
+        delete_ingredient_logic(ingredient_ident)
         e.currentTarget.remove()
     }
 }
@@ -217,23 +212,23 @@ const saveIngredientQuantity = async function (e) {
         let newQuantity = quantity.value
         let newMeasure = measure.value
         let data = {
-            'id': ingredientId,
+            'ingredient_ident': ingredientId,
             "quantity": newQuantity,
             "measure": newMeasure,
         }
         let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/updateIngredient`,
             json = data)
+        console.log(response)
         quantity.value = `${response.data.quantity}`
         measure.value = `${response.data.measure}`
-        let selectedIngredient = document.querySelector(`[data-ingredient-id = "${response.data.id}"]`)
+        let selectedIngredient = document.querySelector(`[data-ingredient-id = "${response.data.ingredient_ident}"]`)
         selectedIngredient.addEventListener('click', editIngredient)
         selectedIngredient.removeEventListener('click', saveIngredientQuantity)
     }
 }
 
-async function delete_ingredient_logic(ingredient_id) {
-    let id = parseInt(ingredient_id)
-    let body = {'ingredient_id': id }
+async function delete_ingredient_logic(ingredient_ident) {
+    let body = {'ingredient_ident': ingredient_ident }
     await axios.post(`http://127.0.0.1:5000/api${curr_url}/delete_ingredient`, json = body)
 }
 

@@ -292,6 +292,9 @@ margin-right: 10px;
     margin-block-start: 0;
     margin-block-end: 0;
 }
+.recipe-link:hover{
+    color:rgb(218, 52, 91) ;
+}
 #scratch-button-container{
     display: flex;
     justify-content: center;

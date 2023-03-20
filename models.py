@@ -141,12 +141,19 @@ class Recipe(db.Model):
     notes = db.relationship('Note', backref='recipe')
     tags = db.relationship('Tag', secondary = 'recipes_tags', backref = 'attached_recipes')
     def serialize(self):
+        ingredient_rows = [row.serialize_ingredient_row() for row
+                            in recipe_ingredient.query.filter(recipe_ingredient.ingredient_recipe == self.id).all()]
         return {
             "id": self.id,
             "name": self.name,
             "rating":self.rating or 'unrated',
             'user_id':self.user_id,
-            'ingredients': [{'id':ingredient.id, 'name': ingredient.name, 'price': ingredient.price} for ingredient in self.child_ingredients],
+            'ingredients': [{'id':ingredient_row['id'],
+                            'ingredient_ident': ingredient_row['recipe_instance'],
+                            'name': ingredient_row['name'],
+                            'measure': ingredient_row['measure'],
+                            'quantity': ingredient_row['quantity']} 
+                            for ingredient_row in ingredient_rows],
             'instructions': [{'id': instruction.id, 'text': instruction.text} for instruction in self.instructions],
             'url' : self.url
         }
@@ -215,11 +222,20 @@ class recipe_ingredient(db.Model):
     __tablename__ = 'recipes_ingredients'
 
     recipe_ingredient = db.Column(
-        db.Integer, db.ForeignKey('ingredients.id', ondelete="cascade"), primary_key=True)
+        db.Integer, db.ForeignKey('ingredients.id', ondelete="cascade"))
     ingredient_recipe = db.Column(
-        db.Integer, db.ForeignKey('recipes.id', ondelete="cascade"), primary_key=True)
+        db.Integer, db.ForeignKey('recipes.id', ondelete="cascade"))
     quantity = db.Column(db.String, nullable = True)
     measure = db.Column(db.String, nullable = True)
     prep = db.Column(db.String, nullable = True)
-    recipe_instance = db.Column(db.Integer, nullable = False)
+    recipe_instance = db.Column(db.String, nullable = False, primary_key=True)
+    
+    def serialize_ingredient_row(self):
+        return{
+            'id': self.recipe_ingredient,
+            'recipe_instance': self.recipe_instance,
+            'name': Ingredient.query.get(self.recipe_ingredient).name,
+            'measure': self.measure,
+            'quantity': self.quantity
+        }
 
