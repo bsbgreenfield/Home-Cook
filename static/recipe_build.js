@@ -78,11 +78,11 @@ async function generateIngredientMarkup(ingredientInputValue) {
      * send a post request to API to add that ingredient
      */
 
-    const newIngredient = createBaseingredientCard(ingredientInputValue)
+    const newIngredient = createIngredientCard(ingredientInputValue)
 
     createDeleteButton(newIngredient)
 
-    createIngredientAmount(newIngredient, null)
+    createIngredientPrep(newIngredient, null)
 
 
     let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/${ingredientInputValue}/add`)
@@ -104,11 +104,16 @@ async function generateIngredientMarkup(ingredientInputValue) {
 
 // *******************************************************************************************
 // create markup helper functions
-function createBaseingredientCard(ingredientName) {
+function createIngredientCard(ingredientName) {
     // ingredient div
     let newIngredient = document.createElement('div')
     newIngredient.classList.add('added-ingredient')
-    newIngredient.innerText = ingredientName
+
+    let ingredientLabel = document.createElement('div')
+    ingredientLabel.className = 'ingredient-name'
+
+    ingredientLabel.innerText = ingredientName
+    newIngredient.appendChild(ingredientLabel)
     return newIngredient
 }
 function createDeleteButton(newIngredient) {
@@ -119,10 +124,13 @@ function createDeleteButton(newIngredient) {
     newIngredient.appendChild(delete_ingedrient_btn)
 }
 
-function createIngredientAmount(newIngredient, ingredientData) {
-    let quantityForm = document.createElement('div')
-    quantityForm.className = 'ingredient-quantity-container'
+function createIngredientPrep(newIngredient, ingredientData) {
 
+    // quantity and measure
+    let editForm = document.createElement('div')
+    editForm.className = 'ingredient-edit-container'
+
+    let quantityForm = document.createElement('div')
     let quantityInput = document.createElement('input')
     quantityInput.placeholder = '-'
     let measureInput = document.createElement('input')
@@ -130,18 +138,36 @@ function createIngredientAmount(newIngredient, ingredientData) {
     quantityInput.className = 'ingredient-quantity', measureInput.className = 'ingredient-measure';
     quantityInput.readOnly = true, measureInput.readOnly = true;
 
+    //prep info
+    let prepForm = document.createElement('div')
+    let prepLabel = document.createElement('label')
+    let prepInput = document.createElement('input')
+
+    prepLabel.innerText = 'prep:'
+    prepLabel.for = 'prep-input'
+
+    prepInput.name = 'prep-input', prepInput.className = 'prep-input'
+    prepInput.readOnly = true
+
     if (ingredientData) {
     ingredientData.quantity ?
-            quantityInput.value = ingredientData.quantity : quantityInput.placeholder = '-'
-        ingredientData.measure ? 
-            measureInput.value = ingredientData.measure : measureInput.placeholder = '-'
+        quantityInput.value = ingredientData.quantity : quantityInput.placeholder = '-'
+    ingredientData.measure ? 
+        measureInput.value = ingredientData.measure : measureInput.placeholder = ''
+
+    ingredientData.prep ?
+        prepInput.value = ingredientData.prep : prepInput.placeholder = ''
     }
 
     quantityForm.appendChild(quantityInput), quantityForm.appendChild(measureInput)
+    prepForm.appendChild(prepLabel), prepForm.appendChild(prepInput)
+
+    editForm.appendChild(quantityForm), editForm.appendChild(prepForm)
+
     let saveQuantityButton = document.createElement('button')
     saveQuantityButton.innerText = 'edit'
-    quantityForm.appendChild(saveQuantityButton)
-    newIngredient.appendChild(quantityForm)
+    editForm.appendChild(saveQuantityButton)
+    newIngredient.appendChild(editForm)
 
     newIngredient.addEventListener('click', editIngredient)
 }
@@ -165,9 +191,9 @@ async function getRecipeInfo() {
 
 function rebuildRecipeMarkupOnLoad(ingredientData) {
 
-    const newIngredient = createBaseingredientCard(ingredientData.name)
+    const newIngredient = createIngredientCard(ingredientData.name)
     createDeleteButton(newIngredient)
-    createIngredientAmount(newIngredient, ingredientData)
+    createIngredientPrep(newIngredient, ingredientData)
 
     newIngredient.setAttribute('data-ingredient-id', ingredientData.recipe_instance)
     ingredientDisplay.appendChild(newIngredient)
@@ -175,16 +201,23 @@ function rebuildRecipeMarkupOnLoad(ingredientData) {
 }
 
 const editIngredient = function (e) {
-    /** fucntionality to edit amount and delete ingredient */
+    /** fucntionality to edit amount, prep and delete ingredient */
     e.preventDefault()
     console.log(e.target.tagName)
     // if edit button is clicked, make inputs editable, add save event listener
     if (e.target.tagName == 'BUTTON') {
         e.target.innerText = 'save';
-        let measure = e.target.previousSibling
-        let quantity = e.target.previousSibling.previousSibling
+
+        // measure and quantity
+        let measure = e.currentTarget.querySelector('.ingredient-measure')
+        let quantity = e.currentTarget.querySelector('.ingredient-quantity')
+
+        //prep
+        let prep = e.currentTarget.querySelector('.prep-input')
+
         measure.style.backgroundColor = 'white', quantity.style.backgroundColor = 'white'
-        measure.readOnly = false, quantity.readOnly = false
+        prep.style.backgroundColor = 'white'
+        measure.readOnly = false, quantity.readOnly = false, prep.readOnly = false
         e.currentTarget.removeEventListener('click', editIngredient)
         e.currentTarget.addEventListener('click', saveIngredientQuantity)
     }
@@ -201,19 +234,24 @@ const saveIngredientQuantity = async function (e) {
     e.preventDefault()
     if (e.target.tagName == 'BUTTON') {
         e.target.innerText = 'edit';
-        let measure = e.target.previousSibling
-        let quantity = e.target.previousSibling.previousSibling
+        let measure = e.currentTarget.querySelector('.ingredient-measure')
+        let quantity = e.currentTarget.querySelector('.ingredient-quantity')
+        let prep = e.currentTarget.querySelector('.prep-input')
+
         measure.style.backgroundColor = 'transparent', quantity.style.backgroundColor = 'transparent'
-        measure.readOnly = true, quantity.readOnly = true
+        prep.style.backgroundColor = 'transparent'
+        measure.readOnly = true, quantity.readOnly = true, prep.readOnly = true
         let ingredientId = e.currentTarget.getAttribute('data-ingredient-id')
 
         // store quantity info in variables, create object with ingredient info
         let newQuantity = quantity.value
         let newMeasure = measure.value
+        let newPrep = prep.value
         let data = {
             'ingredient_ident': ingredientId,
             "quantity": newQuantity,
             "measure": newMeasure,
+            "prep": newPrep
         }
         let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/updateIngredient`,
             json = data)

@@ -152,7 +152,8 @@ class Recipe(db.Model):
                             'ingredient_ident': ingredient_row['recipe_instance'],
                             'name': ingredient_row['name'],
                             'measure': ingredient_row['measure'],
-                            'quantity': ingredient_row['quantity']} 
+                            'quantity': ingredient_row['quantity'], 
+                            'prep': ingredient_row['prep']} 
                             for ingredient_row in ingredient_rows],
             'instructions': [{'id': instruction.id, 'text': instruction.text} for instruction in self.instructions],
             'url' : self.url
@@ -236,6 +237,7 @@ class recipe_ingredient(db.Model):
             'recipe_instance': self.recipe_instance,
             'name': Ingredient.query.get(self.recipe_ingredient).name,
             'measure': self.measure,
-            'quantity': self.quantity
+            'quantity': self.quantity,
+            'prep':self.prep
         }
 
