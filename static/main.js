@@ -71,7 +71,6 @@ async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngre
     pageRecipeHeader.appendChild(recipeName)
    
     //recipe ingredients
-    console.log(response.data.recipe)
     let recipeIngredientlist = response.data.recipe.ingredients
     for (let ingredient of recipeIngredientlist) {
         let ingredientWrapper = document.createElement('div')
@@ -79,7 +78,7 @@ async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngre
         let newIngredientName = document.createElement('div')
         newIngredientName.innerText = ingredient.name
 
-        //get ingredient amounts if they exists
+        //get ingredient amounts if they exist
         let newIngredientAmount = document.createElement('div')
         let quantity = '';
         let measure = '';
@@ -107,11 +106,6 @@ async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngre
     pageRecipeInstructions.appendChild(instructionUl)
 }
 
-if (recipeSelectArea) {
-
-    recipeSelectArea.addEventListener('click', popOutRecipe)
-}
-
 let hits = []
 // create new recipe from keyword
 const searchKeyword = async function edamamSearch(e) {
@@ -134,7 +128,7 @@ const searchKeyword = async function edamamSearch(e) {
     edamamSuggestionsArea.id = 'edamam-suggestions-disp'
     edamamSuggestionsArea.style.display = 'none'
 
-    // append first seven results to the grid
+    // append first 20 results to the grid
 
     for (i = 0; i < 19; i++) {
         if (response.data.hits[i]){
@@ -156,11 +150,10 @@ const searchKeyword = async function edamamSearch(e) {
         placeholder.firstElementChild.innerText = 'No recipes found'
         placeholder.style.display = 'flex'
     }
-    
-    
-
-
 }
+keywordSearchForm.addEventListener('submit', searchKeyword)
+
+
 function extractEdamamData(hits) {
     const cards = []
     //extract the data needed from the given hits from edamam
@@ -192,12 +185,11 @@ function extractEdamamData(hits) {
     return cards
 }
 
-if (keywordSearchForm) {
-    keywordSearchForm.addEventListener('submit', searchKeyword)
-}
-
 
 function generateSuggestionsMarkup(recipeUri, recipeName, recipeImage, recipeSource, recipeCuisine, ingredients) {
+    /** 
+    * Create markup for edamam cards
+    */
     const cardWrapper = document.createElement('div')
     const recipeCard = document.createElement('div')
     recipeCard.className = 'edamam-recipe-card'
@@ -224,6 +216,7 @@ function generateSuggestionsMarkup(recipeUri, recipeName, recipeImage, recipeSou
     link.href = `${recipeUri}`
     cardContents.appendChild(link)
 
+    // tags
     const cuisines = document.createElement('div')
     const cuisine1 = document.createElement('span')
     cuisine1.innerText = recipeCuisine[0]
@@ -255,9 +248,10 @@ function generateSuggestionsMarkup(recipeUri, recipeName, recipeImage, recipeSou
     return cardWrapper
 }
 
-// use edamam suggestions
-
 const useEdamamRecipe = async function (e) {
+    /**
+     * When an edamam card is clicked (unless the link is clicked)
+     */
     if(e.target.className != 'recipe-link'){
         let hitIndex = e.currentTarget.getAttribute('data-recipe-index')
         let recipeData = hits[hitIndex].recipe
@@ -283,9 +277,8 @@ const useEdamamRecipe = async function (e) {
         response = await axios.post('/recipes/build/edamam', json = tinyJson)
         window.location.href = `http://127.0.0.1:5000${response.data}`
     }
-  
 }
-
+recipeSelectArea.addEventListener('click', popOutRecipe)
 
 // collapsable rows and columns
 const expandRecipeRow = function expandRow(e) {
@@ -309,9 +302,9 @@ const expandRecipeRow = function expandRow(e) {
         }
     }
 }
-if (recipeSelectArea) {
-    recipeSelectArea.addEventListener('click', expandRecipeRow)
-}
+
+recipeSelectArea.addEventListener('click', expandRecipeRow)
+
 
 
 
