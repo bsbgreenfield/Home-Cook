@@ -80,11 +80,14 @@ async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngre
 
         //get ingredient amounts if they exist
         let newIngredientAmount = document.createElement('div')
+        newIngredientAmount.className = 'ext-ingredient-amount'
         let quantity = '';
         let measure = '';
+        let prep = '';
         if (ingredient.quantity) quantity = ingredient.quantity
         if (ingredient.measure) measure = ingredient.measure
-        newIngredientAmount.innerText = `(${quantity} ${measure})`
+        if (ingredient.prep) prep = ingredient.prep
+        newIngredientAmount.innerText = `( ${quantity} ${measure} ${prep} )`
         newIngredient.appendChild(newIngredientName), newIngredient.appendChild(newIngredientAmount)
         let newIngredientCheckbox = document.createElement('input');
         newIngredient.setAttribute('for', `i${ingredient.id}`)

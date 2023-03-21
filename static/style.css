@@ -141,6 +141,9 @@ cursor: pointer;
     background-color: #efefef;
     border: none;
 }
+.ext-ingredient-amount{
+    color: #bcbcbc;
+}
 #recipe-disp-grid > div{
 /* background-color: #efefef; */
 border-radius: 5px;

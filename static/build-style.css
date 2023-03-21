@@ -144,8 +144,8 @@
     position: relative;
 }
 .added-ingredient{
+    position: relative;
     min-height: 80px;
-    max-height: 100px;
     background-color: #efefef;
     border-radius: 5px;
     padding-left: 3px;
@@ -154,7 +154,13 @@
     text-align: left;
     justify-content: center;
     position: relative;
-    color: #808080;
+    color: rgb(236, 143, 165);
+    padding: 3px;
+}
+.ingredient-name{
+    position: absolute;
+    top: 5px;
+    left: 5px;
 }
 .delete-ingredient{
     position: absolute;
@@ -181,7 +187,6 @@
     background-color: transparent;
     outline: none;
     border: none;
-    margin-top: 10px;
 }
 .ingredient-quantity{
     width: 4ch;
@@ -189,11 +194,29 @@
 .ingredient-measure{
     width: 10ch;
 }
-.ingredient-quantity-container button{
+
+.prep-input{
+    width: 10ch;
     background-color: transparent;
+    outline: none;
     border: none;
-    text-decoration: underline;
+}
+
+.ingredient-edit-container button{
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background-color: #f8f8f8;
+    border: none;
+    border-radius: 3px;
     cursor: pointer;
+}
+.ingredient-edit-container button:hover{
+    text-decoration: underline;
+}
+.ingredient-edit-container label{
+    color: #acabab;
+    margin-right: 2px;
 }
 ::placeholder{
     color: black;
