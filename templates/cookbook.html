@@ -37,6 +37,18 @@
             <div class="recipe-disp-instructions">
 
             </div>
+            <div class="recipe-disp-comments">
+                <div class="comment-disp-wrapper">
+                    
+                </div>
+                <div class="comment-form-wrapper">
+                    <form class="comment-form">
+                        <label for="comment-input">Comment: </label>
+                        <textarea name="comment-input" class="comment-input"></textarea>
+                        <button class="take-recipe">Comment</button>
+                      </form>
+                </div>
+            </div>
         </div>
         {% if g.user.id  == session['curr_user'] %}
       <!--   

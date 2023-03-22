@@ -56,5 +56,6 @@ class ChangeInfoForm(FlaskForm):
     email = StringField('Email', validators = [DataRequired(), Email()])
     profile_pic = StringField('Profile Photo (URL)')
 
-
+class addCommentForm(FlaskForm):
+    text = TextAreaField('Comment: ', validators=[Length(min = 1)])
     

@@ -27,6 +27,7 @@ class Follows(db.Model):
         primary_key=True,
     )
 
+
 class User(db.Model):
 
     __tablename__ = 'users'
@@ -38,7 +39,9 @@ class User(db.Model):
     password = db.Column(db.Text, nullable=False, unique=True)
     full_name = db.Column(db.String(35), nullable=False)
     email = db.Column(db.String, nullable=False)
-    profile_pic = db.Column(db.String, nullable=True, default= "/static/images/user-default.jpg")
+    profile_pic = db.Column(db.String, nullable=True,
+                            default="/static/images/user-default.jpg")
+    comments = db.relationship('Comment', secondary = 'recipes_comments', backref = 'user')
 
     followers = db.relationship(
         "User",
@@ -56,12 +59,14 @@ class User(db.Model):
 
     def is_followed_by(self, other_user):
 
-        found_user_list = [user for user in self.followers if user == other_user]
+        found_user_list = [
+            user for user in self.followers if user == other_user]
         return len(found_user_list) == 1
 
     def is_following(self, other_user):
 
-        found_user_list = [user for user in self.following if user == other_user]
+        found_user_list = [
+            user for user in self.following if user == other_user]
         return len(found_user_list) == 1
 
     @classmethod
@@ -75,7 +80,7 @@ class User(db.Model):
 
         created_user = User(username=username, email=email, full_name=full_name,
                             password=hashed_password, profile_pic=profile_pic)
-        
+
         db.session.add(created_user)
         db.session.commit()
         return created_user
@@ -95,12 +100,13 @@ class User(db.Model):
             else:
                 return False
         return False
-    
+
     @classmethod
     def encrypt_new_password(cls, password):
         hashed_password = bcrypt.generate_password_hash(
             password).decode('UTF-8')
         return hashed_password
+
 
 class Cookbook(db.Model):
     """cookbook class
@@ -115,8 +121,7 @@ class Cookbook(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey(
         'users.id', ondelete='CASCADE'), nullable=False)
 
-    user = db.relationship('User', backref = 'cookbooks')
-
+    user = db.relationship('User', backref='cookbooks')
 
 
 class Recipe(db.Model):
@@ -128,36 +133,49 @@ class Recipe(db.Model):
                    autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
     rating = db.Column(db.Integer(), nullable=True)
-    url = db.Column(db.String, nullable = True)
-    source = db.Column(db.String, nullable = True)
+    url = db.Column(db.String, nullable=True)
+    source = db.Column(db.String, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey(
         'users.id', ondelete='CASCADE'), nullable=False)
     user = db.relationship('User')
-    cookbook_id = db.Column(db.Integer, db.ForeignKey('cookbooks.id', ondelete = "SET NULL"), nullable = True)
+    cookbook_id = db.Column(db.Integer, db.ForeignKey(
+        'cookbooks.id', ondelete="SET NULL"), nullable=True)
     cookbook = db.relationship(
         'Cookbook', backref='recipes')
-    child_ingredients = db.relationship('Ingredient', secondary = 'recipes_ingredients', backref='recipes')
+    child_ingredients = db.relationship(
+        'Ingredient', secondary='recipes_ingredients', backref='recipes')
     instructions = db.relationship('Instruction', backref='recipe')
     notes = db.relationship('Note', backref='recipe')
-    tags = db.relationship('Tag', secondary = 'recipes_tags', backref = 'attached_recipes')
+    tags = db.relationship('Tag', secondary='recipes_tags',
+                           backref='attached_recipes')
+    comments = db.relationship(
+        'Comment', secondary='recipes_comments', backref='recipe')
+
     def serialize(self):
         ingredient_rows = [row.serialize_ingredient_row() for row
-                            in recipe_ingredient.query.filter(recipe_ingredient.ingredient_recipe == self.id).all()]
+                           in recipe_ingredient.query.filter(recipe_ingredient.ingredient_recipe == self.id).all()]
         return {
             "id": self.id,
             "name": self.name,
-            "rating":self.rating or 'unrated',
-            'user_id':self.user_id,
-            'ingredients': [{'id':ingredient_row['id'],
+            "rating": self.rating or 'unrated',
+            'user_id': self.user_id,
+            'ingredients': [{'id': ingredient_row['id'],
                             'ingredient_ident': ingredient_row['recipe_instance'],
-                            'name': ingredient_row['name'],
-                            'measure': ingredient_row['measure'],
-                            'quantity': ingredient_row['quantity'], 
-                            'prep': ingredient_row['prep']} 
+                             'name': ingredient_row['name'],
+                             'measure': ingredient_row['measure'],
+                             'quantity': ingredient_row['quantity'],
+                             'prep': ingredient_row['prep']}
                             for ingredient_row in ingredient_rows],
             'instructions': [{'id': instruction.id, 'text': instruction.text} for instruction in self.instructions],
-            'url' : self.url
+            'url': self.url,
+            'comments': [{'comment_id': comment.id,
+                          'commenter_id': comment.commenter,
+                          'commenter_name': comment.user[0].username,
+                          'commenter_profile_pic': comment.user[0].profile_pic,
+                          'text': comment.text} for comment in self.comments]
         }
+
+
 class Tag(db.Model):
 
     __tablename__ = 'tags'
@@ -165,7 +183,9 @@ class Tag(db.Model):
                    primary_key=True,
                    autoincrement=True)
     name = db.Column(db.String(30), nullable=False)
-    recipes = db.relationship('Recipe', secondary = 'recipes_tags', backref = 'attached_tags')
+    recipes = db.relationship(
+        'Recipe', secondary='recipes_tags', backref='attached_tags')
+
 
 class recipe_tag(db.Model):
 
@@ -173,10 +193,10 @@ class recipe_tag(db.Model):
 
     tag_id = db.Column(
         db.Integer, db.ForeignKey('tags.id', ondelete="CASCADE"), primary_key=True)
-    recipe_id= db.Column(
+    recipe_id = db.Column(
         db.Integer, db.ForeignKey('recipes.id', ondelete="cascade"), primary_key=True)
-    
-    
+
+
 class Instruction(db.Model):
 
     __tablename__ = 'instructions'
@@ -187,8 +207,6 @@ class Instruction(db.Model):
     text = db.Column(db.Text, nullable=False)
     recipe_id = db.Column(db.Integer, db.ForeignKey(
         'recipes.id', ondelete='CASCADE'), nullable=True)
-    
-
 
 
 class Note(db.Model):
@@ -198,24 +216,60 @@ class Note(db.Model):
                    primary_key=True,
                    autoincrement=True)
     text = db.Column(db.Text, nullable=False)
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id', ondelete = 'CASCADE'), nullable = False)
+    recipe_id = db.Column(db.Integer, db.ForeignKey(
+        'recipes.id', ondelete='CASCADE'), nullable=False)
 
 
-class Ingredient(db.Model):
+class Comment(db.Model):
 
-    __tablename__ =  'ingredients'
+    __tablename__ = 'comments'
 
     id = db.Column(db.Integer,
                    primary_key=True,
                    autoincrement=True)
-    name = db.Column(db.String, nullable = False)
-    scientific_name = db.Column(db.String, nullable = True)
-    group_cat = db.Column(db.String, nullable = True)
-    sub_group = db.Column(db.String, nullable = True)
-    price = db.Column(db.Float, nullable = True)
+    text = db.Column(db.Text, nullable=False)
+    commenter = db.Column(db.Integer, db.ForeignKey(
+        'users.id', ondelete='CASCADE'), nullable=False)
+    
+    def serialize_comment(self):
+        return {
+            'text': self.text,
+            'commenter': self.commenter,
+            'commenter_name': User.query.get(self.commenter).username,
+            'commenter_profile_pic': User.query.get(self.commenter).profile_pic,
+        }
 
-    parent_recipes = db.relationship('Recipe', secondary='recipes_ingredients', backref = 'ingredients')
 
+class recipe_comment(db.Model):
+
+    __tablename__ = 'recipes_comments'
+
+    comment_id = db.Column(db.Integer,
+                           db.ForeignKey('comments.id', ondelete='CASCADE'),
+                           primary_key=True)
+    recipe_id = db.Column(db.Integer,
+                          db.ForeignKey('recipes.id', ondelete='CASCADE'),
+                          primary_key=True)
+    user_id = db.Column(db.Integer,
+                          db.ForeignKey('users.id', ondelete='CASCADE'),
+                          primary_key=True)
+
+
+class Ingredient(db.Model):
+
+    __tablename__ = 'ingredients'
+
+    id = db.Column(db.Integer,
+                   primary_key=True,
+                   autoincrement=True)
+    name = db.Column(db.String, nullable=False)
+    scientific_name = db.Column(db.String, nullable=True)
+    group_cat = db.Column(db.String, nullable=True)
+    sub_group = db.Column(db.String, nullable=True)
+    price = db.Column(db.Float, nullable=True)
+
+    parent_recipes = db.relationship(
+        'Recipe', secondary='recipes_ingredients', backref='ingredients')
 
 
 class recipe_ingredient(db.Model):
@@ -226,18 +280,17 @@ class recipe_ingredient(db.Model):
         db.Integer, db.ForeignKey('ingredients.id', ondelete="cascade"))
     ingredient_recipe = db.Column(
         db.Integer, db.ForeignKey('recipes.id', ondelete="cascade"))
-    quantity = db.Column(db.String, nullable = True)
-    measure = db.Column(db.String, nullable = True)
-    prep = db.Column(db.String, nullable = True)
-    recipe_instance = db.Column(db.String, nullable = False, primary_key=True)
-    
+    quantity = db.Column(db.String, nullable=True)
+    measure = db.Column(db.String, nullable=True)
+    prep = db.Column(db.String, nullable=True)
+    recipe_instance = db.Column(db.String, nullable=False, primary_key=True)
+
     def serialize_ingredient_row(self):
-        return{
+        return {
             'id': self.recipe_ingredient,
             'recipe_instance': self.recipe_instance,
             'name': Ingredient.query.get(self.recipe_ingredient).name,
             'measure': self.measure,
             'quantity': self.quantity,
-            'prep':self.prep
+            'prep': self.prep
         }
-
