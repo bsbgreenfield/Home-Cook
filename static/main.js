@@ -14,6 +14,7 @@ const recipeComments = document.querySelector('.recipe-disp-comments')
 const loader = document.querySelector('#loading-wheel-wrapper')
 const placeholder = document.querySelector('#recipe-disp-placeholder')
 const commentDispWrapper = document.querySelector('.comment-disp-wrapper')
+
 let currentRecipeData; // will be set in popOutRecipe
 
 //cookbook sidebar selectors
@@ -47,10 +48,13 @@ const popOutRecipe = async function recipePopper(e) {
         if (placeholderText) {
             placeholderText.style.display = 'none'
         }
+
+        recipeComments.style.display = 'none'
         // clear out previous recipe info
         recipeHeader.innerHTML = ''
         recipeIngredients.innerHTML = ''
         recipeInstructions.innerHTML = ''
+        commentDispWrapper.innerHTML = ''
 
         // get new data and populate mainRecipeArea
         let selectedRecipeId = e.target.getAttribute('data-recipe-id')
