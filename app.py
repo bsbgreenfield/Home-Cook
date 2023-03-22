@@ -3,8 +3,8 @@ from flask import request, render_template, redirect, flash, Flask, session, g, 
 import requests
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
-from models import db, connect_db, User, Cookbook, Recipe, Ingredient, Instruction, recipe_ingredient, Tag
-from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, RecipeQuickAdd, FriendSearchForm, ChangeInfoForm
+from models import db, connect_db, User, Cookbook, Recipe, Ingredient, Instruction, recipe_ingredient, Tag, Comment, recipe_comment
+from forms import LoginForm, SignUpForm, AddCookbookForm, AddRecipeForm, BuildSearchForm, BuildTagForm, FriendSearchForm, ChangeInfoForm
 
 CURR_USER_KEY = "curr_user"
 
@@ -321,6 +321,19 @@ def view_cookbook(cookbook_id):
 
 # ******************************************************************************
 # API routes
+
+@app.route('/recipes/<int:recipe_id>/comments/add', methods = ['POST'])
+def add_comment(recipe_id):
+    selected_recipe = Recipe.query.get_or_404(recipe_id)
+    new_comment = Comment(text = request.json['text'], commenter = g.user.id)
+    db.session.add(new_comment)
+    db.session.commit()
+    new_comment_row = recipe_comment(comment_id = new_comment.id,
+                                        recipe_id = selected_recipe.id,
+                                        user_id = g.user.id)
+    db.session.add(new_comment_row)
+    db.session.commit()
+    return jsonify(new_comment.serialize_comment())
 
 @app.route('/api/recipes/<int:recipe_id>/edit/info')
 def send_recipe_data(recipe_id):

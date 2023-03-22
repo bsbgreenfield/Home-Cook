@@ -10,8 +10,11 @@ const keywordSearchInput = document.querySelector('#edamam-search-input')
 const recipeHeader = document.querySelector('.recipe-disp-header')
 const recipeIngredients = document.querySelector('.recipe-disp-ingredients')
 const recipeInstructions = document.querySelector('.recipe-disp-instructions')
+const recipeComments = document.querySelector('.recipe-disp-comments')
 const loader = document.querySelector('#loading-wheel-wrapper')
 const placeholder = document.querySelector('#recipe-disp-placeholder')
+const commentDispWrapper = document.querySelector('.comment-disp-wrapper')
+let currentRecipeData; // will be set in popOutRecipe
 
 //cookbook sidebar selectors
 const selectableRecipes = []
@@ -52,14 +55,14 @@ const popOutRecipe = async function recipePopper(e) {
         // get new data and populate mainRecipeArea
         let selectedRecipeId = e.target.getAttribute('data-recipe-id')
         let response = await axios.get(`http://127.0.0.1:5000/api/recipes/${selectedRecipeId}/edit/info`)
-
         generate_existing_recipe_markup(recipeHeader, recipeIngredients, recipeInstructions, response)
     }
 }
 
-async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngredients, pageRecipeInstructions, response){
-/** generate markup for when user chooses to 'pop out' recipe without editing it */ 
-
+async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngredients, pageRecipeInstructions, response) {
+    /** generate markup for when user chooses to 'pop out' recipe without editing it */
+    currentRecipeData = response.data.recipe
+    console.log(currentRecipeData)
     // recipe header
     let recipeName = document.createElement('h2')
     recipeName.innerText = response.data.recipe.name
@@ -69,7 +72,18 @@ async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngre
     editLink.className = 'edit-recipe-link'
     pageRecipeHeader.appendChild(editLink)
     pageRecipeHeader.appendChild(recipeName)
-   
+
+    // recipe tab and comment tab within header
+    let tabContainer = document.createElement('span')
+    tabContainer.className = 'tab-container'
+    let recipeTab = document.createElement('div')
+    let commentTab = document.createElement('div')
+    recipeTab.innerText = 'Recipe', commentTab.innerText = `View Comments (${response.data.recipe.comments.length})`
+    recipeTab.className = 'view-tab-recipe active-recipe-tab', commentTab.className = 'view-tab-comment'
+    recipeTab.addEventListener('click', switchTabs), commentTab.addEventListener('click', switchTabs)
+    tabContainer.appendChild(recipeTab), tabContainer.appendChild(commentTab)
+    recipeHeader.appendChild(tabContainer)
+
     //recipe ingredients
     let recipeIngredientlist = response.data.recipe.ingredients
     for (let ingredient of recipeIngredientlist) {
@@ -109,12 +123,84 @@ async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngre
     pageRecipeInstructions.appendChild(instructionUl)
 }
 
+const switchTabs = function (e) {
+    const recipeTab = document.querySelector('.view-tab-recipe')
+    const commentTab = document.querySelector('.view-tab-comment')
+    recipeTab.classList.toggle('active-recipe-tab'), commentTab.classList.toggle('active-recipe-tab')
+
+    // change disp of recipe
+    if (e.target == commentTab) {
+        recipeIngredients.style.display = 'none'
+        recipeInstructions.style.display = 'none'
+        recipeComments.style.display = 'grid'
+        displayComments(currentRecipeData)
+    }
+    else {
+        commentDispWrapper.innerHTML = ''
+        recipeComments.style.display = 'none'
+        recipeIngredients.style.display = 'grid'
+        recipeInstructions.style.display = 'block'
+    }
+}
+
+function displayComments(recipeData) {
+    //display comment data
+    for (let comment of recipeData.comments) {
+        generateCommentMarkup(comment.commenter_name,
+            comment.commenter_id,
+            comment.commenter_profile_pic,
+            comment.text)
+    }
+}
+
+function generateCommentMarkup(commenter_name, commenter_id, commenter_profile_pic, comment_text) {
+    let listCommentItem = document.createElement('div')
+    let commenterWrapper = document.createElement('div')
+    let commenterLink = document.createElement('a')
+    let commenterProfilePic = document.createElement('img')
+    let commentMessageArea = document.createElement('div')
+    let commentText = document.createElement('p')
+
+    listCommentItem.className = 'list-comment-item'
+    commenterLink.className = 'commenter-link'
+    commenterProfilePic.className = 'commenter-profile-pic'
+    commentMessageArea.className = 'comment-message-area'
+
+    commenterLink.innerText = commenter_name
+    commenterLink.href = `/users/${commenter_id}/profile`
+    commenterProfilePic.src = commenter_profile_pic
+    commentText.innerText = comment_text
+
+    commentMessageArea.appendChild(commentText)
+    commenterLink.prepend(commenterProfilePic)
+    commenterWrapper.appendChild(commenterLink)
+    listCommentItem.appendChild(commenterWrapper)
+    listCommentItem.appendChild(commentMessageArea)
+    commentDispWrapper.prepend(listCommentItem)
+}
+
+let commentForm = document.querySelector('.comment-form')
+let commentInput = document.querySelector('.comment-input')
+commentForm.addEventListener('submit', async function (e) {
+    e.preventDefault()
+    body = { 'text': commentInput.value }
+    let response = await axios.post(`/recipes/${currentRecipeData.id}/comments/add`, json = body)
+    commentInput.value = ''
+    console.log(response)
+    generateCommentMarkup(response.data.commenter_name,
+        response.data.commenter,
+        response.data.commenter_profile_pic,
+        response.data.text)
+
+    commentDispWrapper.prepend('')
+})
+
 let hits = []
 // create new recipe from keyword
 const searchKeyword = async function edamamSearch(e) {
     e.preventDefault();
     previousSuggestions = document.querySelector('#edamam-suggestions-disp')
-    if (previousSuggestions){
+    if (previousSuggestions) {
         previousSuggestions.remove()
     }
     mainRecipeArea.style.display = 'none'
@@ -134,21 +220,21 @@ const searchKeyword = async function edamamSearch(e) {
     // append first 20 results to the grid
 
     for (i = 0; i < 19; i++) {
-        if (response.data.hits[i]){
+        if (response.data.hits[i]) {
             hits.push(response.data.hits[i])
         }
     }
-    if (hits.length > 0){
+    if (hits.length > 0) {
         const completedRecipeCards = extractEdamamData(hits) // returns an array of cards
         for (card of completedRecipeCards) {
             edamamSuggestionsArea.appendChild(card)
         }
         mainRecipeAreaWrapper.appendChild(edamamSuggestionsArea)
-        
+
         loader.style.display = 'none'
         edamamSuggestionsArea.style.display = 'grid'
     }
-    else{
+    else {
         loader.style.display = 'none'
         placeholder.firstElementChild.innerText = 'No recipes found'
         placeholder.style.display = 'flex'
@@ -255,17 +341,17 @@ const useEdamamRecipe = async function (e) {
     /**
      * When an edamam card is clicked (unless the link is clicked)
      */
-    if(e.target.className != 'recipe-link'){
+    if (e.target.className != 'recipe-link') {
         let hitIndex = e.currentTarget.getAttribute('data-recipe-index')
         let recipeData = hits[hitIndex].recipe
         let recipeCuisine = []
         for (i = 0; i < 2; i++) {
             recipeCuisine.push(recipeData.cuisineType[i])
         }
-    
+
         let ingredients = []
         for (let ingredient of recipeData.ingredients) {
-            let new_ingredient = {'food': ingredient.food, 'quantity': ingredient.quantity, 'measure': ingredient.measure}
+            let new_ingredient = { 'food': ingredient.food, 'quantity': ingredient.quantity, 'measure': ingredient.measure }
             ingredients.push(new_ingredient)
         }
         tinyJson = {
