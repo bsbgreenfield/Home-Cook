@@ -85,7 +85,7 @@ async function generateIngredientMarkup(ingredientInputValue) {
     createIngredientPrep(newIngredient, null)
 
 
-    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/${ingredientInputValue}/add`)
+    let response = await axios.post(`${baseURL}/api${curr_url}/${ingredientInputValue}/add`)
 
     SearchDisplay.innerText = 'Search For an Ingredient:'
     SearchDisplay.style.color = ''
@@ -179,8 +179,8 @@ function createIngredientPrep(newIngredient, ingredientData) {
 async function getRecipeInfo() {
     /** on load, get info about recipe and ingredients. */
 
-    let recipeInfo = await axios.get(`http://127.0.0.1:5000/api${curr_url}/info`)
-    let recipeSpecificIngredientinfo = await axios.get(`http://127.0.0.1:5000/api${curr_url}/ingredient_info`)
+    let recipeInfo = await axios.get(`${baseURL}/api${curr_url}/info`)
+    let recipeSpecificIngredientinfo = await axios.get(`${baseURL}/api${curr_url}/ingredient_info`)
 
     // run rebuildRecipeMarkupOnLoad with ingredient data
     for (let ingredient of recipeInfo.data.recipe.ingredients) {
@@ -253,7 +253,7 @@ const saveIngredientQuantity = async function (e) {
             "measure": newMeasure,
             "prep": newPrep
         }
-        let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/updateIngredient`,
+        let response = await axios.post(`${baseURL}/api${curr_url}/updateIngredient`,
             json = data)
         console.log(response)
         quantity.value = `${response.data.quantity}`
@@ -266,7 +266,7 @@ const saveIngredientQuantity = async function (e) {
 
 async function delete_ingredient_logic(ingredient_ident) {
     let body = { 'ingredient_ident': ingredient_ident }
-    await axios.post(`http://127.0.0.1:5000/api${curr_url}/delete_ingredient`, json = body)
+    await axios.post(`${baseURL}/api${curr_url}/delete_ingredient`, json = body)
 }
 
 
@@ -275,7 +275,7 @@ const delete_tag = async function (e) {
     let tagId = e.currentTarget.getAttribute('data-tag-id')
     let body = { 'tag_id': tagId }
     console.log(tagId, e.currentTarget)
-    let response = await axios.post(`http://127.0.0.1:5000/api${curr_url}/delete_tag`, json = body)
+    let response = await axios.post(`${baseURL}/api${curr_url}/delete_tag`, json = body)
     if (response.data == 'success') {
         tag_goner.remove()
     }
@@ -328,7 +328,7 @@ const saveInstructionInfo = async function (e) {
             data['instructions'].push(instructionText.value)
         }
     });
-    await axios.post(`http://127.0.0.1:5000/api/save_instructions`, json = data)
+    await axios.post(`${baseURL}/api/save_instructions`, json = data)
 }
 saveRecipeButton.addEventListener('click', saveInstructionInfo)
 

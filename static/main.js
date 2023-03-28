@@ -1,3 +1,5 @@
+const baseURL = 'http://127.0.0.1:5000'
+
 //main page area selectors
 const mainRecipeAreaWrapper = document.querySelector('#recipe-disp-grid-wrapper')
 const mainRecipeArea = document.querySelector('#recipe-disp-grid');
@@ -58,7 +60,7 @@ const popOutRecipe = async function recipePopper(e) {
 
         // get new data and populate mainRecipeArea
         let selectedRecipeId = e.target.getAttribute('data-recipe-id')
-        let response = await axios.get(`http://127.0.0.1:5000/api/recipes/${selectedRecipeId}/edit/info`)
+        let response = await axios.get(`${baseURL}/api/recipes/${selectedRecipeId}/edit/info`)
         generate_existing_recipe_markup(recipeHeader, recipeIngredients, recipeInstructions, response)
     }
 }
@@ -368,7 +370,7 @@ const useEdamamRecipe = async function (e) {
             'ingredients': ingredients,
         }
         response = await axios.post('/recipes/build/edamam', json = tinyJson)
-        window.location.href = `http://127.0.0.1:5000${response.data}`
+        window.location.href = `${baseURL}${response.data}`
     }
 }
 recipeSelectArea.addEventListener('click', popOutRecipe)
