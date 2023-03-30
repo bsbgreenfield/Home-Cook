@@ -95,6 +95,7 @@ async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngre
     for (let ingredient of recipeIngredientlist) {
         let ingredientWrapper = document.createElement('div')
         let newIngredient = document.createElement('div');
+        newIngredient.className = 'new-ingredient'
         let newIngredientName = document.createElement('div')
         newIngredientName.innerText = ingredient.name
 
@@ -112,6 +113,7 @@ async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngre
         let newIngredientCheckbox = document.createElement('input');
         newIngredient.setAttribute('for', `i${ingredient.id}`)
         newIngredientCheckbox.id = `i${ingredient.id}`
+        newIngredientCheckbox.className = 'ingr-checkbox'
         newIngredientCheckbox.type = 'checkbox'
 
         ingredientWrapper.appendChild(newIngredient)
@@ -377,13 +379,15 @@ recipeSelectArea.addEventListener('click', popOutRecipe)
 
 // collapsable rows and columns
 const expandRecipeRow = function expandRow(e) {
-    if (e.target.className.baseVal == 'expand-svg') {
+    if (e.target.classList.contains('cookbook-expand')) {
         let recipesDiv = e.target.parentElement.nextElementSibling;
         if (recipesDiv.style.display == "") {
             recipesDiv.style.display = 'block'
+            e.target.classList.add('rotated-svg')
         }
         else {
             recipesDiv.style.display = ''
+            e.target.classList.remove('rotated-svg')
         }
     }
 
@@ -391,9 +395,11 @@ const expandRecipeRow = function expandRow(e) {
         let recipesDiv = e.target.parentElement.parentElement.nextElementSibling;
         if (recipesDiv.style.display == "") {
             recipesDiv.style.display = 'block'
+            e.target.parentElement.classList.add('rotated-svg')
         }
         else {
             recipesDiv.style.display = ''
+            e.target.parentElement.classList.remove('rotated-svg')
         }
     }
 }

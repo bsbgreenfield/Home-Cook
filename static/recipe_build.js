@@ -332,23 +332,34 @@ const saveInstructionInfo = async function (e) {
 }
 saveRecipeButton.addEventListener('click', saveInstructionInfo)
 
-/* const get_kroger_access_token = async function(){
-    let resp = await axios.get('/api/get_access_token')
-    let token = resp.data.access_token
-    access_token = token
+
+// reset instruction lines
+function reloadText(){
+    if (sessionStorage.getItem('for-page') != window.location.pathname) sessionStorage.clear()
+    sessionStorage.setItem('for-page', window.location.pathname)
+    const instructionLineInputs = document.querySelectorAll('.instruction-input')
+
+    for (let line of instructionLineInputs){
+        if (sessionStorage.getItem(`autosave-${line.id}`)){
+            line.value = sessionStorage.getItem(`autosave-${line.id}`)
+        }
+    }
+    
+    for(let line of instructionLineInputs){
+        line.addEventListener("change", () => {
+            sessionStorage.setItem(`autosave-${line.id}`, line.value )
+        })
+    }
+    
+    // reset title
+    const recipeName = document.getElementById("name")
+    if (sessionStorage.getItem('recipe-name')){
+        recipeName.value = sessionStorage.getItem('recipe-name')
+    }
+    recipeName.addEventListener("change", () => {
+        sessionStorage.setItem('recipe-name', recipeName.value)
+    })
 }
-
-krogerSearchButton = document.querySelector('#kroger')
-
-
-const search_kroger_ingredients = async function(e){
-    e.preventDefault()
-    let keyword = ingredientSearchBar.value
-    console.log('accesstoken',access_token)
-    let resp = await axios.get(`/api/ingredients/search/${keyword}/${access_token}`)
-    console.log(resp)
-}
-
-krogerSearchButton.addEventListener('click', search_kroger_ingredients) */
 
 getRecipeInfo()
+reloadText()

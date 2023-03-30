@@ -32,17 +32,22 @@
     position: relative;
     display: grid;
     grid-template-columns: 1fr;
-    grid-auto-rows: 10%;
+    grid-auto-rows: 15%;
     gap: 5px;
     border: 1px solid #efefef;
 }
-.cookbook-display-recipe-sidebar div{
+.cookbook-display-recipe-sidebar > div{
     background-color: #efefef;
     border-radius: 5px;
+
 }
 .recipe-sidebar-recipe-select{
     margin: 2px 5px 0px 5px;
     overflow-x: hidden;
+    display: flex;
+}
+.recipe-sidebar-recipe-select div{
+    width: 80%;
 }
 .recipe-sidebar-recipe-select:hover{
     background-color: rgb(190, 190, 190);

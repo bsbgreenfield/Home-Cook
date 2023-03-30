@@ -1,15 +1,21 @@
 const userCookbooks = document.querySelector('.cookbook-card')
 const recipeSidebar = document.querySelector('.cookbook-display-recipe-sidebar')
 const recipeDispHeader = document.querySelector('.recipe-disp-header')
-
+const recipeSelects = document.querySelectorAll('.recipe-sidebar-recipe-select')
 
 let curr_recipe;
 const popOutCookbookRecipe = async function(e){
-    if (e.target.className == 'recipe-sidebar-recipe-select' ){
+    if (e.currentTarget.className == 'recipe-sidebar-recipe-select' ){
+
+
+        recipeIngredients.style.display = 'grid'
+        recipeInstructions.style.display = 'block'
+        recipeComments.style.display = 'none'
+        commentDispWrapper.innerHTML = ''
         recipeHeader.innerHTML = ''
         recipeIngredients.innerHTML = ''
         recipeInstructions.innerHTML = ''
-    let selectedRecipeId = e.target.getAttribute('data-recipe-id')
+    let selectedRecipeId = e.currentTarget.getAttribute('data-recipe-id')
 
     //save recipe id to global variable so we can access it when copying recipe
     curr_recipe = selectedRecipeId;
@@ -31,5 +37,6 @@ const popOutCookbookRecipe = async function(e){
 
 
 
-
-recipeSidebar.addEventListener('click', popOutCookbookRecipe)
+for (let recipeSelect of recipeSelects){
+    recipeSelect.addEventListener('click', popOutCookbookRecipe)
+}
