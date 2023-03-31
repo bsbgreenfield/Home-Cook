@@ -175,6 +175,14 @@ margin-right: 10px;
 .new-ingredient{
     display: flex;
     gap: 3px;
+    cursor: pointer;
+}
+.new-ingredient:hover{
+    text-decoration: line-through;
+    text-decoration-color: rgb(218, 52, 91);
+}
+.crossed{
+    text-decoration: line-through;
 }
 .recipe-disp-instructions{
     margin-bottom: 10px;
@@ -462,3 +470,4 @@ svg:hover{
     top: 10%;
 
 }
+

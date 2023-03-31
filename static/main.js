@@ -117,7 +117,6 @@ async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngre
         newIngredientCheckbox.type = 'checkbox'
 
         ingredientWrapper.appendChild(newIngredient)
-        ingredientWrapper.appendChild(newIngredientCheckbox)
         pageRecipeIngredients.appendChild(ingredientWrapper)
     }
     //recipe instructions
@@ -403,6 +402,10 @@ const expandRecipeRow = function expandRow(e) {
         }
     }
 }
+
+recipeIngredients.addEventListener('click', (e)=>{
+    e.target.parentElement.classList.toggle('crossed')
+})
 
 recipeSelectArea.addEventListener('click', expandRecipeRow)
 
