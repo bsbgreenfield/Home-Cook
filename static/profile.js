@@ -40,6 +40,3 @@ const popOutCookbookRecipe = async function(e){
 for (let recipeSelect of recipeSelects){
     recipeSelect.addEventListener('click', popOutCookbookRecipe)
 }
-recipeIngredients.addEventListener('click', (e)=>{
-    e.target.parentElement.classList.toggle('crossed')
-})

@@ -12,7 +12,8 @@ New Recipe
           {% for error in field.errors %}
             <span>{{ error }}</span>
           {% endfor %}
-          <span>{{ field(placeholder=field.label.text, autocomplete= 'off') }}</span>
+          
+          <div>{{field.label.text}}{{ field(placeholder=' "My Recipe" ', autocomplete= 'off') }}</div>
         {% endfor %}
     </form>
     <div class="recipe-tags">

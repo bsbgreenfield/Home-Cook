@@ -55,6 +55,7 @@
 .user-card-wrapper{
     max-width: 300px;
     height: max-content;
+    min-height: 100%;
     background-color: #efefef;
 }
 .profile-card{

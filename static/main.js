@@ -66,6 +66,15 @@ const popOutRecipe = async function recipePopper(e) {
 }
 
 async function generate_existing_recipe_markup(pageRecipeHeader, pageRecipeIngredients, pageRecipeInstructions, response) {
+
+    pageRecipeIngredients.addEventListener('click', (e) => {
+        console.log(e.target)
+        if (e.target.parentElement.classList.contains('new-ingredient')){
+            e.target.parentElement.classList.toggle('crossed')
+        }
+      
+    })
+
     /** generate markup for when user chooses to 'pop out' recipe without editing it */
     currentRecipeData = response.data.recipe
     console.log(currentRecipeData)
@@ -403,9 +412,6 @@ const expandRecipeRow = function expandRow(e) {
     }
 }
 
-recipeIngredients.addEventListener('click', (e)=>{
-    e.target.parentElement.classList.toggle('crossed')
-})
 
 recipeSelectArea.addEventListener('click', expandRecipeRow)
 

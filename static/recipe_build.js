@@ -151,9 +151,9 @@ function createIngredientPrep(newIngredient, ingredientData) {
 
     if (ingredientData) {
     ingredientData.quantity ?
-        quantityInput.value = ingredientData.quantity : quantityInput.placeholder = '-'
+        quantityInput.value = ingredientData.quantity : quantityInput.placeholder = '#'
     ingredientData.measure ? 
-        measureInput.value = ingredientData.measure : measureInput.placeholder = ''
+        measureInput.value = ingredientData.measure : measureInput.placeholder = '-'
 
     ingredientData.prep ?
         prepInput.value = ingredientData.prep : prepInput.placeholder = ''
@@ -203,11 +203,16 @@ function rebuildRecipeMarkupOnLoad(ingredientData) {
 const editIngredient = function (e) {
     /** fucntionality to edit amount, prep and delete ingredient */
     e.preventDefault()
-    console.log(e.target.tagName)
+    console.log(e.currentTarget)
     // if edit button is clicked, make inputs editable, add save event listener
     if (e.target.tagName == 'BUTTON') {
         e.target.innerText = 'save';
 
+        let container = e.currentTarget.querySelector('.ingredient-edit-container')
+        let helpText = document.createElement('div')
+        helpText.className = 'help-text'
+        helpText.innerText = 'ex. 1 oz prep:chopped'
+        container.appendChild(helpText)
         // measure and quantity
         let measure = e.currentTarget.querySelector('.ingredient-measure')
         let quantity = e.currentTarget.querySelector('.ingredient-quantity')
@@ -234,6 +239,8 @@ const saveIngredientQuantity = async function (e) {
     e.preventDefault()
     if (e.target.tagName == 'BUTTON') {
         e.target.innerText = 'edit';
+        let helpText = e.currentTarget.querySelector('.help-text')
+        helpText.remove()
         let measure = e.currentTarget.querySelector('.ingredient-measure')
         let quantity = e.currentTarget.querySelector('.ingredient-quantity')
         let prep = e.currentTarget.querySelector('.prep-input')

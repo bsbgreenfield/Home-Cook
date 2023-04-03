@@ -93,8 +93,8 @@
 .build-button{
     grid-column-start: 9;
     grid-column-end: 11;
-    grid-row-start: 8;
-    grid-row-end: 9;
+    grid-row-start: 9;
+    grid-row-end: 10;
 }
 .build-main{
     height: 93vh;
@@ -245,27 +245,30 @@
 #build-recipe-form{
     grid-column-start: 1;
     display: grid;
-    grid-template-columns: 3fr 1fr;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
     gap: 5px;
 }
 
 
 #cookbook{
-    width: 100%;
-    height: 100%;
+    width: 50%;
+    height: 70%;
     max-height: 100px;
-    background: linear-gradient(to bottom right, #c4cdf5, rgb(107, 116, 220)) 
+    background: linear-gradient(to bottom right, #c4cdf5, rgb(107, 116, 220));
+    flex-basis: fit-content;
+    margin-left: 15%;
 }
 
-#build-recipe-form span{
-    height: 50%;
+#build-recipe-form div{
+    height: 90%;
     max-height: 90px;
     width: 100%;
     display: flex;
     justify-content: start;
 }
 #build-recipe-form input{
-    height: 90%;
+    height: 70%;
     width: 100%;
     padding: 5px;
     border: none;
@@ -320,4 +323,9 @@ flex-direction: column;
     border: none;
     background-color: white;
     cursor: pointer;
+}
+.help-text{
+    font-style: italic;
+    color: black;
+    font-size: 12px;
 }
