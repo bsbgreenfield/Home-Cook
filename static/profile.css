@@ -1,0 +1,123 @@
+#profile-page-wrapper{
+    height: 90vh;
+    padding: 15px;
+    display: grid;
+    grid-template-rows: 1fr 2fr;
+    grid-template-columns: 1fr 4fr;
+}
+
+.detail-disp-main{
+    grid-column-start: 2;
+    grid-column-end: 3;
+    grid-row-start: 2;
+    grid-row-end: 3;
+    display: flex;
+    justify-content: center;
+    max-height: 66vh;
+    overflow-y: scroll;
+}
+.detail-content-grid{
+    width: 70vw;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-auto-rows: 10rem;
+    gap: 10%;
+}
+.detail-content-grid a{
+    text-decoration: none;
+}
+.card-wrapper{
+    border-radius: 10px;
+    height: 100%;
+}
+.card-wrapper:hover{
+    background-color: rgb(190, 190, 190);
+    cursor: pointer;
+}
+.cookbook-link{
+    display: block;
+}
+
+.cookbook-card-contents{
+    padding: 15px;
+    font-size: 20px;
+    height: 80%;
+}
+.cookbook-name{
+    grid-column-start: 1;
+    grid-column-end: 3;
+    text-decoration: none;
+}
+.cookbook-card-wrapper{
+    border: 5px solid rgb(107, 116, 220);
+}
+
+.card-inner{
+    height: 90%;
+}
+.profile-user-banner{
+    position: relative;
+    grid-row-start: 1;
+    grid-row-end: 3;
+    background-color: #efefef;
+    padding-left: 5px;
+    border-radius: 5px;
+    padding-left: 20px;
+    padding-bottom: 5px;
+    margin-left: 5%;
+    margin-right: 5%;
+}
+#profile-page-following-list ul{
+    padding-inline-start: 10px;
+    font-weight: 300;
+    max-height: 15vh;
+    overflow-y: scroll;
+}
+#profile-page-following-list ul::-webkit-scrollbar{
+    width: 3px;
+}
+#profile-page-following-list div{
+    padding-bottom: 5px;
+}
+#profile-page-followers-list ul{
+    padding-inline-start: 10px;
+    font-weight: 300;
+    max-height: 15vh;
+    overflow-y: scroll;
+}
+#profile-page-follower-lists div{
+    padding-bottom: 5px;
+}
+
+.profile-page-pic-wrapper img{
+    width: 90%;
+    padding-top: 10px;
+}
+.cookbook-recipes-count{
+    grid-column-start: 1;
+    grid-column-end: 3;
+    text-decoration: unset;
+}
+#profile-header-disp{
+    font-size: 45px;
+    margin-left: 5%;
+    margin-top: 5%;
+}
+
+#edit-own-profile{
+    position: absolute;
+    bottom: 5px;
+    left: 20%;
+}
+
+#edit-own-profile button{
+    background-color: rgb(218, 52, 91) ;
+    color: white;
+    border: none;
+    border-radius: 3px;
+}
+#edit-own-profile button:hover{
+    background-color: white ;
+    color:  rgb(218, 52, 91); 
+    cursor: pointer;
+}

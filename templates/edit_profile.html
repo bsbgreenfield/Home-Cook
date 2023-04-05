@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}
+{{user.username}}
+{% endblock %}
+{% block content %}
+<div class="signup-container">
+    <div>
+      <h1>Edit Profile Information</h1>
+
+      <form method="POST" id="user_form">
+        {{ form.hidden_tag() }}
+
+        {% for field in form if field.widget.input_type != 'hidden' %}
+          {% for error in field.errors %}
+            <span>{{ error }}</span>
+          {% endfor %}
+          {% if field.label.text != "Password" %}
+           {{ field.label}}
+            {% else %}
+            Password (must be entered to save info)
+            {% endif %}
+          {{ field }}
+        {% endfor %}
+
+        <button>Save info</button>
+      </form>
+    </div>
+  </div>
+
+{% endblock %}

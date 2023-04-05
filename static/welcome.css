@@ -1,0 +1,51 @@
+.welcome-wrapper{
+    height: 100vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: #efefef
+}
+.welcome-wrapper div{
+    margin: 5%;
+    font-size: 4rem;
+}
+.welcome-wrapper div input{
+    height: 50px;
+    width: 200px;
+    font-size: 2rem
+}
+.welcome-wrapper div button{
+    width: max-content;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
+.login-button{
+    background-color:rgb(107, 116, 220) ;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    padding: 10px;
+}
+.signup-button{
+    background-color: rgb(218, 52, 91);
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.login-button:hover{
+    background-color: white;
+    color: rgb(107, 116, 220) ;
+}
+.signup-button:hover{
+    background-color: white;
+    color: rgb(218, 52, 91);
+}
+.title-text{
+    position: absolute;
+    top: 5%;
+    font-size: 5rem;
+}

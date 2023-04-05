@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block title %}
+Friends
+{% endblock %}
+{% block content %}
+<div id="friends-page-container">
+    <div id="friends-page-upper">
+        <div id = "my-friends-banner">
+            <span class="profile-tab active-tab">Following</span> <span class="profile-tab" >Followers</span>
+        </div>
+        <div id="following-list-container">
+            {% for friend in g.user.following %}
+            <div class="card-wrapper user-card-wrapper" data-user-id="{{friend.id}}">
+                <div class="user-card profile-card">
+                    <div class="card-inner user-card-inner">
+                        <a href="/users/{{friend.id}}/profile">
+                            <div class="image-wrapper friends-image">
+                            <img src="{{friend.profile_pic}}" alt="" class="profile-pic-large">
+                            </div>
+                        </a>
+                        <div class="card-contents friends-page-card-contents">
+                            <div>{{friend.username}}</div>
+                            <div>({{friend.full_name}})</div>
+                            <div>Cookbooks: {{friend.cookbooks | length}}</div>
+                            <form action="/api/users/{{g.user.id}}/friends/remove/{{friend.id}}" method="POST">
+                                <div class="unfollow-button"><button>unfollow</button></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div id="followers-list-container">
+            {% for friend in g.user.followers %}
+            <div class="card-wrapper user-card-wrapper" data-user-id="{{friend.id}}">
+                <div class="user-card profile-card">
+                    <div class="card-inner user-card-inner">
+                        <a href="/users/{{friend.id}}/profile">
+                            <div class="image-wrapper friends-image">
+                            <img src="{{friend.profile_pic}}" alt="" class="profile-pic-large">
+                            </div>
+                        </a>
+                        <div class="card-contents friends-page-card-contents">
+                            <div>{{friend.username}}--</div>
+                            <div>({{friend.full_name}})</div>
+                            <div>Cookbooks: {{friend.cookbooks | length}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+   
+    <div id="all_users_container">
+        <div id="user-search">
+            <form method="POST" id="friend-search-form" autocomplete="off">
+                {{ form.hidden_tag() }}
+            
+                {% for field in form if field.widget.input_type != 'hidden' %}
+                  {% for error in field.errors %}
+                    <span>{{ error }}</span>
+                  {% endfor %}
+                  <span>{{ field(placeholder=field.label.text) }}</span>
+                {% endfor %}
+                <button>Go</button>
+              </form>
+        </div>
+        <div id="user-search-results">
+            {% if user_results == 'DNE' %}
+            <div class = "user-search-placeholder">
+             <p> No users found with that name </p> 
+            </div>
+            {% elif not user_results  %}
+            <div class = "user-search-placeholder">
+               <p>Search for a user!</p> 
+            </div>
+            {% else %}
+            {% for user in user_results %}
+                <div class="card-wrapper user-card-wrapper" data-user-id="{{user.id}}">
+                    <div class="user-card profile-card">
+                        <div class="card-inner user-card-inner">
+                            <a href="/users/{{user.id}}/profile">
+                                <div class="image-wrapper friends-image">
+                                <img src="{{user.profile_pic}}" alt="" class="profile-pic-large">
+                                </div>
+                            </a>
+                            <div class="card-contents friends-page-card-contents">
+                                <div>{{user.username}}</div>
+                                <div>({{user.full_name}})</div>
+                                <div>cookbooks: {{user.cookbooks | length}}</div>
+                                
+                                {% if user in g.user.following %}
+                                <form action="/api/users/{{g.user.id}}/friends/remove/{{user.id}}" method="POST">
+                                    <div class="unfollow-button"><button>unfollow</button></div>
+                                </form>
+                                {% elif user.id != g.user.id %}
+                                <form action="/api/users/{{g.user.id}}/friends/add/{{user.id}}" method="POST">
+                                    <div class="follow-button"><button>Follow!</button></div>
+                                </form>
+                                {% else %}
+                                {% endif %}
+                               
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+          {% endif %}
+        </div>  
+    </div>
+
+</div>
+<script src="/static/friends.js"></script>
+{% endblock %}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} {% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/build-style.css">
+    <link rel="stylesheet" href="/static/profile.css">
+    <link rel="stylesheet" href="/static/cookbook.css">
+    <link rel="stylesheet" href="/static/friends.css">
+    <link rel="stylesheet" href="/static/signup.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Signika+Negative:wght@300;500&display=swap" rel="stylesheet">    
+</head>
+<body>
+    <nav id="navbar">
+        <span><a href="/users/{{g.user.id}}">Home</a></span>
+        <span><a href="/users/{{g.user.id}}/friends">Friends</a></span>
+        <span><a href="/users/{{g.user.id}}/profile">Profile</a></span>
+        {% if session['curr_user'] == g.user.id%}
+        <form action="/logout" method=POST style="display:inline-block">
+            <button class="link-button">Logout</button>
+        </form>
+
+        {% else %}
+        <div>
+            <span><button class="link-button">Login</button></span> /
+            <span><button class="link-button">Signup</button></span>
+        </div>
+        {% endif %}
+    </nav>
+    {% block content %} 
+    {% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/static/main.js"></script>
+    <script src="/static/recipe_build.js"></script>
+    <script src="/static/profile.js"></script>
+    <script src="/static/cookbook.js"></script>
+</body>
+</html>

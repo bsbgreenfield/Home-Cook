@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}
+{{cookbook.name}}
+{% endblock %}
+{% block content %}
+<div class="profile-user-banner">
+    <h1>{{cookbook.user.full_name}}</h1>
+    <span><a href="/users/{{cookbook.user.id}}/profile">back to cookbooks</a></span>
+</div>
+<div class="cookbook-display-wrapper">
+    <div class="cookbook-display-grid">
+        <div class="cookbook-display-header"> 
+            <span class="header"> {{cookbook.name}} 
+                {% if cookbook.user.id != g.user.id %}
+                <form action="/api/cookbooks/{{cookbook.id}}/copy" method="POST"><button class="take-cookbook" >Copy Cookbook</button></form> 
+                {% else %}
+                <form action="/cookbooks/{{cookbook.id}}/edit"><button class="take-cookbook">Edit Cookbook</button></form>
+                {% endif %}
+            </span>
+        </div>
+        <div class="cookbook-display-recipe-sidebar">
+                {% for recipe in cookbook.recipes %}
+                <div class="recipe-sidebar-recipe-select" data-recipe-id="{{recipe.id}}">
+                    <div>{{ recipe.name }} </div>
+                    <span><svg viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg" fill-rule="evenodd" clip-rule="evenodd" class="expand-svg"><path d="M4 .755l14.374 11.245-14.374 11.219.619.781 15.381-12-15.391-12-.609.755z" /></svg></span>
+                </div>
+                
+                {% endfor %}
+        </div>
+        <div id="cookbook-display-recipe-main">
+            <div class="recipe-disp-header">
+
+            </div>
+            <div class="recipe-disp-ingredients">
+
+            </div>
+            <div class="recipe-disp-instructions">
+
+            </div>
+            <div class="recipe-disp-comments">
+                <div class="comment-disp-wrapper">
+                    
+                </div>
+                <div class="comment-form-wrapper">
+                    <form class="comment-form">
+                        <label for="comment-input">Comment: </label>
+                        <textarea name="comment-input" class="comment-input"></textarea>
+                        <button class="take-recipe">Comment</button>
+                      </form>
+                </div>
+            </div>
+        </div>
+        {% if g.user.id  == session['curr_user'] %}
+      <!--   
+        <div class="cookbook-display-rating">
+            Leave a rating!
+        </div>
+        <div class="cookbook-display-comment">
+            Add a comment:
+        </div> -->
+        {% else %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

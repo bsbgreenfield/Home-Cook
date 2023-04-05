@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}
+{{user.username}}
+{% endblock %}
+{% block content %}
+<div id="profile-page-wrapper">
+    <div class="profile-user-banner">
+        <div class="profile-page-pic-wrapper">
+            <img src='{{user.profile_pic}}' alt="">
+        </div>
+        <h1>{{user.full_name}}</h1>
+        <h3>{{user.username}}</h3>
+        <div id="profile-page-followers"> 
+            Followers: {{user.followers | length}}
+            <div id="profile-page-followers-list">
+                <ul>
+                    {% for follower in user.followers %}
+                    <div>
+                        <a href="/users/{{follower.id}}/profile">{{follower.username}}</a>
+                    </div>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div id="profile-page-following" >
+            Following: {{user.following | length}}
+            <div id="profile-page-following-list">
+                <ul>
+                    {% for following in user.following %}
+                    <div>
+                        <a href="/users/{{following.id}}/profile">{{following.username}}</a>
+                    </div>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% if user.id == g.user.id %}
+        <div id="edit-own-profile">
+            <form action="/users/{{user.id}}/edit"> 
+                <button> Edit Profile </button>
+            </form>
+        </div>
+    {% else %}
+    {% endif %}
+    </div>
+    <div id="profile-header-disp">
+        {{user.username}}'s Cookbooks:
+    </div>
+    <div class="detail-disp-main">
+        <div class="detail-content-grid">
+            {% for cookbook in user.cookbooks %}
+            <a href="/cookbooks/{{cookbook.id}}" class="cookbook-card-link">
+            <div class="card-wrapper cookbook-card-wrapper">
+                <div class="cookbook-card profile-card">
+                    <div class="card-inner">
+                        <div class="card-contents cookbook-card-contents">
+                            <div class="cookbook-name">{{cookbook.name}}</div>
+                            <div class="cookbook-recipes-count">Recipes: {{cookbook.recipes | length}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </a>
+           
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
